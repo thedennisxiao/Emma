@@ -22,11 +22,22 @@
             position: relative;
             width: 100%;
             height: 100%;
-            background-image: url('Emma_night_sky.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
+            overflow: hidden;
+        }
+
+        /* Background image layer for crisp rendering */
+        #sky-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            z-index: 0;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            image-rendering: auto;
         }
 
         /* SVG Trees Container */
@@ -202,6 +213,9 @@
 </head>
 <body>
     <div id="scene-container">
+        <!-- Background sky image -->
+        <img id="sky-background" src="Emma_night_sky.png" alt="Night sky background">
+        
         <!-- Star Field Canvas -->
         <canvas id="star-canvas"></canvas>
 
