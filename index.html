@@ -174,30 +174,60 @@
     </div>
 
     <script>
-        // ===== PHASE 2: STAR FIELD =====
+        // ===== PHASE 3: TEXT FORMATION ANIMATION =====
 
         // Canvas setup
         const canvas = document.getElementById('star-canvas');
         const ctx = canvas.getContext('2d');
 
-        // Star configuration
+        // Animation configuration
         const STAR_COUNT = 85; // 75-100 stars
+        const ANIMATION_DURATION = 2.5; // seconds
         const stars = [];
+        let animationStartTime = null;
+        let isAnimating = false;
 
         // Star class for managing individual stars
         class Star {
             constructor(x, y, radius, color, twinkleSpeed, twinkleOffset) {
+                // Current position
                 this.x = x;
                 this.y = y;
+
+                // Initial random position (for animation start)
+                this.startX = x;
+                this.startY = y;
+
+                // Target position (for text formation)
+                this.targetX = x;
+                this.targetY = y;
+
                 this.radius = radius;
                 this.color = color;
                 this.twinkleSpeed = twinkleSpeed;
                 this.twinkleOffset = twinkleOffset;
             }
 
+            // Set target position for text formation
+            setTarget(targetX, targetY) {
+                this.targetX = targetX;
+                this.targetY = targetY;
+            }
+
+            // Update position based on animation progress
+            updatePosition(progress) {
+                // Ease-in-out cubic function
+                const eased = progress < 0.5
+                    ? 4 * progress * progress * progress
+                    : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+                this.x = this.startX + (this.targetX - this.startX) * eased;
+                this.y = this.startY + (this.targetY - this.startY) * eased;
+            }
+
             // Calculate opacity based on time for twinkle effect
             getOpacity(time) {
-                // Sine wave for smooth pulsing (0.3 to 1.0 opacity range)
+                // Sine wave for smooth pulsing (0.5 to 1.0 opacity range)
                 return 0.5 + 0.5 * Math.sin(time * this.twinkleSpeed + this.twinkleOffset);
             }
 
@@ -211,74 +241,162 @@
             }
         }
 
+        // Simple dot-matrix letter definitions (5x7 grid)
+        // Each letter is an array of [x, y] coordinates
+        const LETTERS = {
+            'W': [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[1,5],[2,4],[2,5],[2,6],[3,5],[4,0],[4,1],[4,2],[4,3],[4,4],[4,5],[4,6]],
+            'I': [[0,0],[1,0],[2,0],[2,1],[2,2],[2,3],[2,4],[2,5],[0,6],[1,6],[2,6],[3,6],[4,6]],
+            'L': [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[1,6],[2,6],[3,6],[4,6]],
+            'Y': [[0,0],[0,1],[0,2],[1,2],[2,3],[2,4],[2,5],[2,6],[3,2],[4,0],[4,1],[4,2]],
+            'O': [[1,0],[2,0],[3,0],[0,1],[4,1],[0,2],[4,2],[0,3],[4,3],[0,4],[4,4],[0,5],[4,5],[1,6],[2,6],[3,6]],
+            'U': [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[1,6],[2,6],[3,6],[4,0],[4,1],[4,2],[4,3],[4,4],[4,5]],
+            'B': [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[1,0],[2,0],[3,0],[4,1],[4,2],[3,3],[2,3],[1,3],[4,4],[4,5],[3,6],[2,6],[1,6]],
+            'E': [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[1,0],[2,0],[3,0],[4,0],[1,3],[2,3],[3,3],[1,6],[2,6],[3,6],[4,6]],
+            'M': [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[1,1],[2,2],[3,1],[4,0],[4,1],[4,2],[4,3],[4,4],[4,5],[4,6]],
+            'P': [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[1,0],[2,0],[3,0],[4,1],[4,2],[3,3],[2,3],[1,3]],
+            'A': [[2,0],[1,1],[3,1],[0,2],[4,2],[0,3],[4,3],[1,3],[2,3],[3,3],[0,4],[4,4],[0,5],[4,5],[0,6],[4,6]],
+            'R': [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[1,0],[2,0],[3,0],[4,1],[4,2],[3,3],[2,3],[1,3],[2,4],[3,5],[4,6]],
+            'T': [[0,0],[1,0],[2,0],[3,0],[4,0],[2,1],[2,2],[2,3],[2,4],[2,5],[2,6]],
+            'N': [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[1,1],[2,2],[2,3],[3,4],[4,0],[4,1],[4,2],[4,3],[4,4],[4,5],[4,6]],
+            '?': [[1,0],[2,0],[3,0],[0,1],[4,1],[4,2],[3,3],[2,4],[2,6]],
+            ' ': []
+        };
+
         // Initialize canvas size
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         }
 
+        // Generate text positions from letter definitions
+        function generateTextPositions(text, centerX, centerY, dotSize) {
+            const positions = [];
+            const lines = text.split('\n');
+            const lineHeight = 9 * dotSize;
+            const totalHeight = lines.length * lineHeight;
+            let startY = centerY - totalHeight / 2;
+
+            lines.forEach((line, lineIndex) => {
+                line = line.toUpperCase();
+                const lineWidth = line.split('').reduce((width, char) => {
+                    return width + (char === ' ' ? 4 : 6);
+                }, -1) * dotSize;
+
+                let startX = centerX - lineWidth / 2;
+                let currentX = startX;
+
+                for (let char of line) {
+                    const letterDots = LETTERS[char] || [];
+                    letterDots.forEach(([dx, dy]) => {
+                        positions.push({
+                            x: currentX + dx * dotSize,
+                            y: startY + lineIndex * lineHeight + dy * dotSize
+                        });
+                    });
+                    currentX += (char === ' ' ? 4 : 6) * dotSize;
+                }
+            });
+
+            return positions;
+        }
+
         // Generate stars with random positions
         function generateStars() {
-            stars.length = 0; // Clear existing stars
+            stars.length = 0;
 
             const width = canvas.width;
             const height = canvas.height;
 
-            // Avoid tree areas (roughly 25% on left and right edges)
-            const safeMarginX = width * 0.15; // 15% margin on each side
+            // Avoid tree areas
+            const safeMarginX = width * 0.15;
             const safeStartX = safeMarginX;
             const safeEndX = width - safeMarginX;
             const safeWidth = safeEndX - safeStartX;
 
             // Create stars with variation
             for (let i = 0; i < STAR_COUNT; i++) {
-                // Random position in safe area
                 const x = safeStartX + Math.random() * safeWidth;
                 const y = Math.random() * height;
-
-                // Random radius (1px to 2.5px for variation)
                 const radius = 0.8 + Math.random() * 1.7;
 
-                // Random color (mix of white and subtle blue tones)
                 const colorChoice = Math.random();
                 let color;
                 if (colorChoice < 0.7) {
-                    // Most stars are white/warm white
                     color = `rgb(255, 255, ${240 + Math.floor(Math.random() * 15)})`;
                 } else {
-                    // Some stars have a subtle blue tint
                     color = `rgb(${220 + Math.floor(Math.random() * 35)}, ${230 + Math.floor(Math.random() * 25)}, 255)`;
                 }
 
-                // Random twinkle speed (slow and gentle: 0.3 to 0.8)
                 const twinkleSpeed = 0.3 + Math.random() * 0.5;
-
-                // Random offset to desynchronize twinkles
                 const twinkleOffset = Math.random() * Math.PI * 2;
 
                 stars.push(new Star(x, y, radius, color, twinkleSpeed, twinkleOffset));
+            }
+
+            // Set text formation targets
+            setTextTargets();
+        }
+
+        // Set target positions for text formation
+        function setTextTargets() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const dotSize = Math.min(canvas.width, canvas.height) * 0.012; // Responsive sizing
+
+            const text = "Will you\nbe my partner?";
+            const positions = generateTextPositions(text, centerX, centerY, dotSize);
+
+            // Assign positions to stars
+            stars.forEach((star, i) => {
+                if (i < positions.length) {
+                    star.setTarget(positions[i].x, positions[i].y);
+                } else {
+                    // Extra stars stay in random positions
+                    star.setTarget(star.startX, star.startY);
+                }
+            });
+        }
+
+        // Start text formation animation
+        function startTextFormation() {
+            if (!isAnimating) {
+                isAnimating = true;
+                animationStartTime = Date.now() / 1000;
+                console.log('Starting text formation animation...');
             }
         }
 
         // Animation loop
         let animationId;
         function animate() {
-            const time = Date.now() * 0.001; // Convert to seconds
+            const time = Date.now() * 0.001;
 
             // Clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+            // Update star positions if animating
+            if (isAnimating) {
+                const elapsed = time - animationStartTime;
+                const progress = Math.min(elapsed / ANIMATION_DURATION, 1.0);
+
+                stars.forEach(star => star.updatePosition(progress));
+
+                if (progress >= 1.0) {
+                    isAnimating = false;
+                    console.log('Text formation complete: "Will you be my partner?"');
+                }
+            }
+
             // Draw all stars
             stars.forEach(star => star.draw(time));
 
-            // Continue animation
             animationId = requestAnimationFrame(animate);
         }
 
         // Handle window resize
         window.addEventListener('resize', () => {
             resizeCanvas();
-            generateStars(); // Regenerate stars for new dimensions
+            generateStars();
         });
 
         // Initialize scene
@@ -286,8 +404,13 @@
             resizeCanvas();
             generateStars();
             animate();
-            console.log('Emma Partner Proposal - Phase 2: Star Field Active');
-            console.log(`Generated ${STAR_COUNT} stars with gentle twinkle animation`);
+
+            // Start text formation after 1 second
+            setTimeout(() => {
+                startTextFormation();
+            }, 1000);
+
+            console.log('Emma Partner Proposal - Phase 3: Text Formation Ready');
         }
 
         // Start when page loads

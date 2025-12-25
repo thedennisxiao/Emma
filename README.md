@@ -32,10 +32,15 @@ This is a romantic partner proposal web experience featuring:
 - [x] Smooth Canvas-based animation with requestAnimationFrame
 - [x] Stars evenly distributed with gentle, non-jarring twinkle effect
 
-### Phase 3: The Question (Upcoming)
-- [ ] Text reveal animation
-- [ ] Interactive response mechanism
-- [ ] Constellation formation on acceptance
+### Phase 3: Text Formation ✅ COMPLETE
+- [x] Calculated star positions to spell "Will you be my partner?"
+- [x] Smooth animation from random positions to text formation
+- [x] Ease-in-out cubic easing for natural movement
+- [x] 2.5 second animation duration
+- [x] Stars hold text formation when complete
+- [x] Dot-matrix letter system (5x7 grid) for clear legibility
+- [x] Responsive text sizing based on viewport
+- [x] Two-line layout: "Will you" / "be my partner?"
 
 ## How to View
 
@@ -65,8 +70,11 @@ Emma/
 - Uses vanilla JavaScript (no frameworks) for easy debugging
 - SVG trees are hand-crafted to represent Pacific Northwest species
 - Canvas for star rendering provides smooth 60fps animations
+- Custom dot-matrix font system for text formation
+- Ease-in-out cubic easing for smooth, natural motion
 - Fully responsive design works on desktop, tablet, and mobile
-- Star positions regenerate dynamically on window resize
+- Star positions and text size adjust dynamically on window resize
+- Animation triggers automatically 1 second after page load
 
 ## Design Specifications
 
@@ -80,13 +88,21 @@ Emma/
 - **Douglas Fir**: Triangular, layered branches creating classic conical shape
 - **Western Red Cedar**: Irregular, drooping branch pattern characteristic of the species
 
+### Animation Specifications
+- **Text Formation Duration**: 2.5 seconds
+- **Easing Function**: Ease-in-out cubic (smooth acceleration and deceleration)
+- **Animation Trigger**: 1 second after page load
+- **Text Content**: "Will you" (line 1), "be my partner?" (line 2)
+- **Letter System**: Custom 5×7 dot-matrix font with 13 unique characters
+
 ## Future Enhancements
 
-- Implement constellation pattern reveal
-- Add interactive question with reveal animation
-- Add response mechanism and acceptance animation
+- Add interactive response mechanism (Yes/No buttons)
+- Constellation formation animation on acceptance
+- Celebration animation or visual effect
 - Include sound design (optional)
 - Add sharing capability (optional)
+- Mobile touch interactions
 
 ## License
 
