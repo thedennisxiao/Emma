@@ -40,34 +40,8 @@
             image-rendering: auto;
         }
 
-        /* SVG Trees Container */
-        #trees-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 10;
-        }
 
-        /* Left tree group */
-        .tree-left {
-            position: absolute;
-            top: 0;
-            left: 0;
-            opacity: 0.95;
-        }
-
-        /* Right tree group */
-        .tree-right {
-            position: absolute;
-            top: 0;
-            right: 0;
-            opacity: 0.95;
-        }
-
-        /* Star canvas - behind trees, above background */
+        /* Star canvas - above background */
         #star-canvas {
             position: absolute;
             top: 0;
@@ -77,7 +51,7 @@
             z-index: 1;
         }
 
-        /* Content area - centered and framed by trees */
+        /* Content area - centered */
         #content-area {
             position: absolute;
             top: 50%;
@@ -214,75 +188,12 @@
 <body>
     <div id="scene-container">
         <!-- Background sky image -->
-        <img id="sky-background" src="Emma_night_sky.png" alt="Night sky background">
+        <img id="sky-background" src="Emma_night_sky.png?v=2" alt="Night sky background">
         
         <!-- Star Field Canvas -->
         <canvas id="star-canvas"></canvas>
 
-        <!-- Trees SVG Container -->
-        <div id="trees-container">
-            <!-- Left side trees (Douglas Fir) -->
-            <svg class="tree-left" width="400" height="100%" viewBox="0 0 400 800" preserveAspectRatio="xMinYMin meet">
-                <!-- Douglas Fir silhouette - left side -->
-                <g fill="#0a0d1a" opacity="0.9">
-                    <!-- Main trunk -->
-                    <path d="M 50 800 L 50 300 L 70 300 L 70 800 Z"/>
-
-                    <!-- Branches - layered triangular shapes for fir appearance -->
-                    <path d="M 60 320 L 20 380 L 100 380 Z"/>
-                    <path d="M 60 360 L 15 430 L 105 430 Z"/>
-                    <path d="M 60 410 L 10 490 L 110 490 Z"/>
-                    <path d="M 60 470 L 5 560 L 115 560 Z"/>
-                    <path d="M 60 540 L 0 630 L 120 630 Z"/>
-                    <path d="M 60 610 L 0 710 L 120 710 Z"/>
-                </g>
-
-                <!-- Western Red Cedar - left side, slightly behind -->
-                <g fill="#0d1020" opacity="0.85">
-                    <path d="M 180 800 L 180 250 L 195 250 L 195 800 Z"/>
-
-                    <!-- Cedar has a more irregular, drooping branch pattern -->
-                    <path d="M 187 270 L 150 310 L 160 310 L 140 340 L 230 340 L 210 310 L 220 310 Z"/>
-                    <path d="M 187 320 L 145 365 L 155 365 L 135 400 L 240 400 L 220 365 L 230 365 Z"/>
-                    <path d="M 187 380 L 140 430 L 150 430 L 130 470 L 250 470 L 230 430 L 240 430 Z"/>
-                    <path d="M 187 450 L 135 505 L 145 505 L 125 550 L 260 550 L 240 505 L 250 505 Z"/>
-                    <path d="M 187 530 L 130 590 L 140 590 L 120 640 L 270 640 L 250 590 L 260 590 Z"/>
-                    <path d="M 187 620 L 125 685 L 135 685 L 115 740 L 280 740 L 260 685 L 270 685 Z"/>
-                </g>
-            </svg>
-
-            <!-- Right side trees (Douglas Fir and Western Red Cedar) -->
-            <svg class="tree-right" width="400" height="100%" viewBox="0 0 400 800" preserveAspectRatio="xMaxYMin meet">
-                <!-- Douglas Fir silhouette - right side -->
-                <g fill="#0a0d1a" opacity="0.9">
-                    <!-- Main trunk -->
-                    <path d="M 330 800 L 330 300 L 350 300 L 350 800 Z"/>
-
-                    <!-- Branches -->
-                    <path d="M 340 320 L 300 380 L 380 380 Z"/>
-                    <path d="M 340 360 L 295 430 L 385 430 Z"/>
-                    <path d="M 340 410 L 290 490 L 390 490 Z"/>
-                    <path d="M 340 470 L 285 560 L 395 560 Z"/>
-                    <path d="M 340 540 L 280 630 L 400 630 Z"/>
-                    <path d="M 340 610 L 280 710 L 400 710 Z"/>
-                </g>
-
-                <!-- Western Red Cedar - right side -->
-                <g fill="#0d1020" opacity="0.85">
-                    <path d="M 205 800 L 205 250 L 220 250 L 220 800 Z"/>
-
-                    <!-- Cedar branches -->
-                    <path d="M 212 270 L 180 310 L 190 310 L 170 340 L 260 340 L 240 310 L 250 310 Z"/>
-                    <path d="M 212 320 L 175 365 L 185 365 L 160 400 L 270 400 L 245 365 L 255 365 Z"/>
-                    <path d="M 212 380 L 170 430 L 180 430 L 150 470 L 280 470 L 250 430 L 260 430 Z"/>
-                    <path d="M 212 450 L 165 505 L 175 505 L 140 550 L 290 550 L 255 505 L 265 505 Z"/>
-                    <path d="M 212 530 L 160 590 L 170 590 L 130 640 L 300 640 L 260 590 L 270 590 Z"/>
-                    <path d="M 212 620 L 155 685 L 165 685 L 120 740 L 310 740 L 265 685 L 275 685 Z"/>
-                </g>
-            </svg>
-        </div>
-
-        <!-- Content Area (framed by trees) -->
+        <!-- Content Area -->
         <div id="content-area">
             <!-- Interactive buttons appear after text formation -->
             <div id="button-container">
@@ -305,8 +216,8 @@
         const noButton = document.getElementById('no-button');
 
         // Animation configuration
-        const STAR_COUNT = 85; // 75-100 stars
-        const ANIMATION_DURATION = 2.5; // seconds
+        const STAR_COUNT = 300; // Increased for clear text formation
+        const ANIMATION_DURATION = 4.0; // seconds - longer for ultra-smooth fade
         const BUTTON_DELAY = 1.0; // seconds after text formation
         const CONSTELLATION_DURATION = 2.0; // seconds for constellation formation
         const stars = [];
@@ -333,12 +244,18 @@
                 this.color = color;
                 this.twinkleSpeed = twinkleSpeed;
                 this.twinkleOffset = twinkleOffset;
+                this.isTextStar = false; // Track if this star is part of text
+                this.fadeInProgress = 1.0; // 0 = invisible, 1 = fully visible
+                this.fadeDelay = 0; // Delay before this star starts fading in (for stagger effect)
             }
 
             // Set target position for text formation
             setTarget(targetX, targetY) {
                 this.targetX = targetX;
                 this.targetY = targetY;
+                // For fade-in animation, set position immediately (no movement)
+                this.x = targetX;
+                this.y = targetY;
             }
 
             // Update position based on animation progress
@@ -354,16 +271,54 @@
 
             // Calculate opacity based on time for twinkle effect
             getOpacity(time) {
-                // Sine wave for smooth pulsing (0.5 to 1.0 opacity range)
-                return 0.5 + 0.5 * Math.sin(time * this.twinkleSpeed + this.twinkleOffset);
+                let baseOpacity;
+                if (this.isTextStar) {
+                    // During fade-in, don't twinkle - just use full brightness
+                    if (this.fadeInProgress < 1.0) {
+                        baseOpacity = 1.0; // Full brightness during fade-in
+                    } else {
+                        // After fade-in complete, add subtle twinkle
+                        baseOpacity = 0.95 + 0.05 * Math.sin(time * this.twinkleSpeed + this.twinkleOffset);
+                    }
+                } else {
+                    // Background stars: Sine wave for smooth pulsing (0.7 to 1.0 opacity range - brighter)
+                    baseOpacity = 0.7 + 0.3 * Math.sin(time * this.twinkleSpeed + this.twinkleOffset);
+                }
+                // Apply fade-in progress
+                return baseOpacity * this.fadeInProgress;
+            }
+            
+            // Get display radius (text stars are larger)
+            getDisplayRadius() {
+                return this.isTextStar ? this.radius * 2.5 : this.radius;
             }
 
             draw(time) {
+                const opacity = this.getOpacity(time);
+                const displayRadius = this.getDisplayRadius();
+                
+                // Skip drawing if completely invisible (optimization)
+                if (opacity <= 0) return;
+                
+                if (this.isTextStar) {
+                    // Text stars: brighter glow and larger size
+                    ctx.shadowBlur = displayRadius * 3;
+                    ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+                } else {
+                    // Background stars: subtle glow
+                    ctx.shadowBlur = this.radius * 2;
+                    ctx.shadowColor = this.color;
+                }
+                
+                // Draw main star with clamped opacity for smooth rendering
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.globalAlpha = this.getOpacity(time);
+                ctx.arc(this.x, this.y, displayRadius, 0, Math.PI * 2);
+                ctx.fillStyle = this.isTextStar ? 'rgb(255, 255, 255)' : this.color; // Text stars are pure white
+                ctx.globalAlpha = Math.max(0, Math.min(1, opacity)); // Clamp opacity for smooth rendering
                 ctx.fill();
+                
+                // Reset shadow
+                ctx.shadowBlur = 0;
                 ctx.globalAlpha = 1.0; // Reset alpha
             }
         }
@@ -485,24 +440,20 @@
             const width = canvas.width;
             const height = canvas.height;
 
-            // Avoid tree areas
-            const safeMarginX = width * 0.15;
-            const safeStartX = safeMarginX;
-            const safeEndX = width - safeMarginX;
-            const safeWidth = safeEndX - safeStartX;
-
-            // Create stars with variation
+            // Create stars with variation across the full screen
             for (let i = 0; i < STAR_COUNT; i++) {
-                const x = safeStartX + Math.random() * safeWidth;
+                const x = Math.random() * width;
                 const y = Math.random() * height;
-                const radius = 0.8 + Math.random() * 1.7;
+                const radius = 1.5 + Math.random() * 2.5; // Larger stars for visibility
 
                 const colorChoice = Math.random();
                 let color;
-                if (colorChoice < 0.7) {
-                    color = `rgb(255, 255, ${240 + Math.floor(Math.random() * 15)})`;
+                if (colorChoice < 0.8) {
+                    // Brighter white stars
+                    color = `rgb(255, 255, 255)`;
                 } else {
-                    color = `rgb(${220 + Math.floor(Math.random() * 35)}, ${230 + Math.floor(Math.random() * 25)}, 255)`;
+                    // Brighter blue stars
+                    color = `rgb(200, 220, 255)`;
                 }
 
                 const twinkleSpeed = 0.3 + Math.random() * 0.5;
@@ -510,27 +461,43 @@
 
                 stars.push(new Star(x, y, radius, color, twinkleSpeed, twinkleOffset));
             }
-
-            // Set text formation targets
+            
+            // Position stars for text immediately but keep them invisible until animation starts
             setTextTargets();
         }
 
         // Set target positions for text formation
         function setTextTargets() {
+            // Constrain to center area to avoid trees on sides - wider margins for full text
+            const safeMarginX = canvas.width * 0.20; // 20% margin on each side (wider for text)
+            const safeMarginY = canvas.height * 0.12; // 12% margin top/bottom
             const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const dotSize = Math.min(canvas.width, canvas.height) * 0.012; // Responsive sizing
+            const centerY = canvas.height / 2 - canvas.height * 0.08; // Slightly higher to avoid bottom trees
+            const dotSize = Math.min(canvas.width, canvas.height) * 0.009; // Smaller to ensure full text fits
 
             const text = "Will you\nbe my partner?";
             const positions = generateTextPositions(text, centerX, centerY, dotSize);
+            
+            // Use all positions - don't filter (text should fit within safe area with adjusted margins)
+            const safePositions = positions;
 
-            // Assign positions to stars
+            // Assign positions to stars - set them immediately for fade-in effect
+            console.log(`Positioning ${safePositions.length} stars for text formation out of ${stars.length} total stars`);
             stars.forEach((star, i) => {
-                if (i < positions.length) {
-                    star.setTarget(positions[i].x, positions[i].y);
+                if (i < safePositions.length) {
+                    star.setTarget(safePositions[i].x, safePositions[i].y);
+                    star.isTextStar = true; // Mark as text star for enhanced visibility
+                    star.fadeInProgress = 0; // Start invisible, will fade in smoothly
+                    // Stagger the fade-in: each star starts slightly later for smooth effect
+                    star.fadeDelay = (i / safePositions.length) * 0.6; // Spread over 0.6 seconds
                 } else {
-                    // Extra stars stay in random positions
-                    star.setTarget(star.startX, star.startY);
+                    // Extra stars stay in random positions within safe area
+                    star.setTarget(
+                        safeMarginX + Math.random() * (canvas.width - 2 * safeMarginX),
+                        safeMarginY + Math.random() * (canvas.height - 2 * safeMarginY)
+                    );
+                    star.isTextStar = false; // Background star
+                    star.fadeInProgress = 1; // Background stars are already visible
                 }
             });
         }
@@ -568,6 +535,7 @@
 
             // Assign positions to stars
             stars.forEach((star, i) => {
+                star.isTextStar = false; // Reset text star flag for constellations
                 if (i < positions.length) {
                     star.setTarget(positions[i].x, positions[i].y);
                 } else {
@@ -584,9 +552,11 @@
         // Start text formation animation
         function startTextFormation() {
             if (!isAnimating) {
+                // Set text targets first so stars are positioned correctly
+                setTextTargets();
                 isAnimating = true;
                 animationStartTime = Date.now() / 1000;
-                console.log('Starting text formation animation...');
+                console.log('Starting text formation animation (fade-in)...');
             }
         }
 
@@ -611,16 +581,44 @@
             // Clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Update star positions if animating text formation
+            // Fade in stars for text formation (no movement, just fade)
             if (isAnimating) {
                 const elapsed = time - animationStartTime;
                 const progress = Math.min(elapsed / ANIMATION_DURATION, 1.0);
 
-                stars.forEach(star => star.updatePosition(progress));
+                // Fade in text stars smoothly with staggered timing to prevent stutter
+                stars.forEach(star => {
+                    if (star.isTextStar) {
+                        // Calculate when this star should start fading (after its delay)
+                        const fadeStartProgress = star.fadeDelay; // Delay as fraction of total duration
+                        const fadeDuration = 1.0 - fadeStartProgress; // Remaining time after delay
+                        
+                        let starProgress = 0;
+                        if (progress > fadeStartProgress && fadeDuration > 0) {
+                            // Star has started fading - calculate its progress (0 to 1)
+                            const elapsedSinceStart = progress - fadeStartProgress;
+                            starProgress = Math.min(1, elapsedSinceStart / fadeDuration);
+                        }
+                        
+                        // Very smooth ease-in-out using sine wave for ultra-smooth transition
+                        if (starProgress > 0) {
+                            const eased = -(Math.cos(Math.PI * starProgress) - 1) / 2;
+                            star.fadeInProgress = eased;
+                        } else {
+                            star.fadeInProgress = 0; // Still waiting to start
+                        }
+                    }
+                });
 
                 if (progress >= 1.0) {
                     isAnimating = false;
-                    console.log('Text formation complete: "Will you be my partner?"');
+                    // Ensure all text stars are fully visible
+                    stars.forEach(star => {
+                        if (star.isTextStar) {
+                            star.fadeInProgress = 1.0;
+                        }
+                    });
+                    console.log('Text formation complete: "Will you be my partner"');
 
                     // Show buttons after a delay
                     setTimeout(() => {
