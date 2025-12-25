@@ -54,6 +54,18 @@ This is a romantic partner proposal web experience featuring:
 - [x] Backdrop blur and semi-transparent styling
 - [x] Responsive sizing for mobile devices
 
+### Phase 5: Constellation Transformation ✅ COMPLETE
+- [x] Text dissolves when either button is clicked
+- [x] Stars rearrange into two side-by-side constellation figures:
+  - Orca whale (left) - 39 stars forming distinctive features
+  - Stag with antlers (right) - 50 stars forming recognizable silhouette
+- [x] Smooth 2-second transformation with ease-in-out cubic easing
+- [x] Constellation patterns use normalized coordinates (0-1)
+- [x] Responsive sizing (25% of viewport)
+- [x] Figures clearly distinguishable and proportionally balanced
+- [x] Stars hold final constellation positions
+- [x] Symbolic meaning: Orca (ocean/strength) + Stag (forest/grace)
+
 ## How to View
 
 Simply open `index.html` in a modern web browser:
@@ -83,12 +95,14 @@ Emma/
 - SVG trees are hand-crafted to represent Pacific Northwest species
 - Canvas for star rendering provides smooth 60fps animations
 - Custom dot-matrix font system for text formation
+- Constellation patterns defined with normalized coordinates for scalability
 - Ease-in-out cubic easing for smooth, natural motion
 - Glassmorphism effect for ethereal button styling
 - Fully responsive design works on desktop, tablet, and mobile
 - Star positions and text size adjust dynamically on window resize
 - Animation triggers automatically 1 second after page load
 - Interactive buttons appear 1 second after text formation
+- Constellation transformation creates symbolic partnership representation
 
 ## Design Specifications
 
@@ -121,14 +135,31 @@ Emma/
   - Subtle lift effect (translateY: -2px)
 - **Typography**: Georgia serif, 18px (responsive)
 
+### Constellation Specifications
+- **Orca Whale (Left)**:
+  - 39 stars total
+  - Distinctive features: Dorsal fin, eye patch, tail flukes, pectoral fin
+  - Positioned at 30% from left edge
+  - Symbolizes: Strength, intelligence, connection to the ocean
+- **Stag (Right)**:
+  - 50 stars total
+  - Distinctive features: Antlers, head/ears, body outline, four legs
+  - Positioned at 70% from left edge
+  - Symbolizes: Grace, nobility, connection to the forest
+- **Transformation Duration**: 2.0 seconds
+- **Size**: 25% of viewport (min dimension)
+- **Coordinate System**: Normalized 0-1 for perfect scalability
+
 ## Future Enhancements
 
-- Constellation formation animation when button is clicked
-- Unique celebration animations for each response
-- Heart or symbolic constellation patterns
+- Connecting lines between constellation stars (traditional constellation style)
+- Unique celebration animations for different responses
+- Additional constellation patterns (e.g., heart, infinity symbol)
+- Particle effects or shooting stars
 - Include sound design (optional)
 - Add sharing capability (optional)
 - Advanced mobile touch gestures
+- Animation replay or reset functionality
 
 ## License
 
