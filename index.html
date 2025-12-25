@@ -58,6 +58,16 @@
             opacity: 0.95;
         }
 
+        /* Star canvas - behind trees, above background */
+        #star-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
         /* Content area - centered and framed by trees */
         #content-area {
             position: absolute;
@@ -91,6 +101,9 @@
 </head>
 <body>
     <div id="scene-container">
+        <!-- Star Field Canvas -->
+        <canvas id="star-canvas"></canvas>
+
         <!-- Trees SVG Container -->
         <div id="trees-container">
             <!-- Left side trees (Douglas Fir) -->
@@ -161,16 +174,124 @@
     </div>
 
     <script>
-        // Vanilla JavaScript for future phases
-        // Phase 1: Base scene is now complete
+        // ===== PHASE 2: STAR FIELD =====
 
-        // Ensure responsive behavior
+        // Canvas setup
+        const canvas = document.getElementById('star-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Star configuration
+        const STAR_COUNT = 85; // 75-100 stars
+        const stars = [];
+
+        // Star class for managing individual stars
+        class Star {
+            constructor(x, y, radius, color, twinkleSpeed, twinkleOffset) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.color = color;
+                this.twinkleSpeed = twinkleSpeed;
+                this.twinkleOffset = twinkleOffset;
+            }
+
+            // Calculate opacity based on time for twinkle effect
+            getOpacity(time) {
+                // Sine wave for smooth pulsing (0.3 to 1.0 opacity range)
+                return 0.5 + 0.5 * Math.sin(time * this.twinkleSpeed + this.twinkleOffset);
+            }
+
+            draw(time) {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.getOpacity(time);
+                ctx.fill();
+                ctx.globalAlpha = 1.0; // Reset alpha
+            }
+        }
+
+        // Initialize canvas size
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        // Generate stars with random positions
+        function generateStars() {
+            stars.length = 0; // Clear existing stars
+
+            const width = canvas.width;
+            const height = canvas.height;
+
+            // Avoid tree areas (roughly 25% on left and right edges)
+            const safeMarginX = width * 0.15; // 15% margin on each side
+            const safeStartX = safeMarginX;
+            const safeEndX = width - safeMarginX;
+            const safeWidth = safeEndX - safeStartX;
+
+            // Create stars with variation
+            for (let i = 0; i < STAR_COUNT; i++) {
+                // Random position in safe area
+                const x = safeStartX + Math.random() * safeWidth;
+                const y = Math.random() * height;
+
+                // Random radius (1px to 2.5px for variation)
+                const radius = 0.8 + Math.random() * 1.7;
+
+                // Random color (mix of white and subtle blue tones)
+                const colorChoice = Math.random();
+                let color;
+                if (colorChoice < 0.7) {
+                    // Most stars are white/warm white
+                    color = `rgb(255, 255, ${240 + Math.floor(Math.random() * 15)})`;
+                } else {
+                    // Some stars have a subtle blue tint
+                    color = `rgb(${220 + Math.floor(Math.random() * 35)}, ${230 + Math.floor(Math.random() * 25)}, 255)`;
+                }
+
+                // Random twinkle speed (slow and gentle: 0.3 to 0.8)
+                const twinkleSpeed = 0.3 + Math.random() * 0.5;
+
+                // Random offset to desynchronize twinkles
+                const twinkleOffset = Math.random() * Math.PI * 2;
+
+                stars.push(new Star(x, y, radius, color, twinkleSpeed, twinkleOffset));
+            }
+        }
+
+        // Animation loop
+        let animationId;
+        function animate() {
+            const time = Date.now() * 0.001; // Convert to seconds
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw all stars
+            stars.forEach(star => star.draw(time));
+
+            // Continue animation
+            animationId = requestAnimationFrame(animate);
+        }
+
+        // Handle window resize
         window.addEventListener('resize', () => {
-            // Future: adjust canvas or star positions if needed
+            resizeCanvas();
+            generateStars(); // Regenerate stars for new dimensions
         });
 
-        // Log scene initialization
-        console.log('Emma Partner Proposal - Phase 1: Base Scene Loaded');
+        // Initialize scene
+        function init() {
+            resizeCanvas();
+            generateStars();
+            animate();
+            console.log('Emma Partner Proposal - Phase 2: Star Field Active');
+            console.log(`Generated ${STAR_COUNT} stars with gentle twinkle animation`);
+        }
+
+        // Start when page loads
+        window.addEventListener('load', init);
     </script>
 </body>
 </html>

@@ -25,11 +25,12 @@ This is a romantic partner proposal web experience featuring:
 - [x] SVG silhouettes of Pacific Northwest trees (Douglas fir, Western red cedar)
 - [x] Trees frame an open center area for main content
 
-### Phase 2: Stars (Upcoming)
-- [ ] Scattered star points across the sky
-- [ ] Subtle twinkling animation
-- [ ] Varying star sizes and opacity
-- [ ] Constellation patterns hidden among random stars
+### Phase 2: Star Field ✅ COMPLETE
+- [x] 85 stars scattered across the center sky area (avoiding tree canopy)
+- [x] Subtle twinkle animation using sine wave opacity pulse
+- [x] Varying star sizes (0.8px - 2.5px) and colors (white/blue tones)
+- [x] Smooth Canvas-based animation with requestAnimationFrame
+- [x] Stars evenly distributed with gentle, non-jarring twinkle effect
 
 ### Phase 3: The Question (Upcoming)
 - [ ] Text reveal animation
@@ -63,14 +64,17 @@ Emma/
 - All code is contained in a single HTML file for simplicity
 - Uses vanilla JavaScript (no frameworks) for easy debugging
 - SVG trees are hand-crafted to represent Pacific Northwest species
+- Canvas for star rendering provides smooth 60fps animations
 - Fully responsive design works on desktop, tablet, and mobile
+- Star positions regenerate dynamically on window resize
 
 ## Design Specifications
 
 ### Color Palette
 - Night sky gradient: `#0a0e27` → `#1a1f3a` → `#2a2f4a` → `#1a1f35`
 - Tree silhouettes: `#0a0d1a` (Douglas Fir), `#0d1020` (Cedar)
-- Stars: White/yellow tones with varying opacity
+- Stars: 70% warm white (`rgb(255, 255, 240-255)`), 30% subtle blue (`rgb(220-255, 230-255, 255)`)
+- Star opacity: Sine wave pulse between 0.5 and 1.0 for gentle twinkle
 
 ### Tree Species
 - **Douglas Fir**: Triangular, layered branches creating classic conical shape
@@ -78,9 +82,9 @@ Emma/
 
 ## Future Enhancements
 
-- Add star field with twinkling animation
 - Implement constellation pattern reveal
-- Add interactive question and response
+- Add interactive question with reveal animation
+- Add response mechanism and acceptance animation
 - Include sound design (optional)
 - Add sharing capability (optional)
 
