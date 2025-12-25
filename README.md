@@ -42,6 +42,18 @@ This is a romantic partner proposal web experience featuring:
 - [x] Responsive text sizing based on viewport
 - [x] Two-line layout: "Will you" / "be my partner?"
 
+### Phase 4: Interactive Buttons ✅ COMPLETE
+- [x] Two ethereal buttons ("Yes" and "No") below the star-text
+- [x] Constellation-themed aesthetic with glassmorphism effect
+- [x] Smooth fade-in animation 1 second after text formation completes
+- [x] Hover states with subtle glow effects
+  - Yes button: soft blue glow on hover
+  - No button: soft pink glow on hover
+- [x] Active states with lift effect (translateY)
+- [x] Both buttons trigger same transformation sequence
+- [x] Backdrop blur and semi-transparent styling
+- [x] Responsive sizing for mobile devices
+
 ## How to View
 
 Simply open `index.html` in a modern web browser:
@@ -72,9 +84,11 @@ Emma/
 - Canvas for star rendering provides smooth 60fps animations
 - Custom dot-matrix font system for text formation
 - Ease-in-out cubic easing for smooth, natural motion
+- Glassmorphism effect for ethereal button styling
 - Fully responsive design works on desktop, tablet, and mobile
 - Star positions and text size adjust dynamically on window resize
 - Animation triggers automatically 1 second after page load
+- Interactive buttons appear 1 second after text formation
 
 ## Design Specifications
 
@@ -94,15 +108,27 @@ Emma/
 - **Animation Trigger**: 1 second after page load
 - **Text Content**: "Will you" (line 1), "be my partner?" (line 2)
 - **Letter System**: Custom 5×7 dot-matrix font with 13 unique characters
+- **Button Fade-In**: 1.5 second transition, 1 second after text completion
+
+### Button Specifications
+- **Style**: Glassmorphism with backdrop blur
+- **Base Color**: `rgba(255, 255, 255, 0.08)` background
+- **Border**: `1px solid rgba(255, 255, 255, 0.3)`
+- **Hover Effects**:
+  - Yes button: Light blue glow `rgba(173, 216, 230, 0.7)`
+  - No button: Light pink glow `rgba(255, 192, 203, 0.5)`
+  - Expanding radial gradient from center on hover
+  - Subtle lift effect (translateY: -2px)
+- **Typography**: Georgia serif, 18px (responsive)
 
 ## Future Enhancements
 
-- Add interactive response mechanism (Yes/No buttons)
-- Constellation formation animation on acceptance
-- Celebration animation or visual effect
+- Constellation formation animation when button is clicked
+- Unique celebration animations for each response
+- Heart or symbolic constellation patterns
 - Include sound design (optional)
 - Add sharing capability (optional)
-- Mobile touch interactions
+- Advanced mobile touch gestures
 
 ## License
 

@@ -83,11 +83,104 @@
             justify-content: center;
         }
 
+        /* Interactive buttons container */
+        #button-container {
+            position: absolute;
+            bottom: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 40px;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+            z-index: 20;
+        }
+
+        #button-container.visible {
+            opacity: 1;
+        }
+
+        /* Ethereal button styling */
+        .response-button {
+            padding: 12px 32px;
+            font-family: 'Georgia', serif;
+            font-size: 18px;
+            font-weight: normal;
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 30px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Subtle glow effect */
+        .response-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .response-button:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 1);
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .response-button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .response-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.15),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Specific button variants */
+        #yes-button:hover {
+            border-color: rgba(173, 216, 230, 0.7);
+            box-shadow: 0 6px 25px rgba(173, 216, 230, 0.3),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.2);
+        }
+
+        #no-button:hover {
+            border-color: rgba(255, 192, 203, 0.5);
+            box-shadow: 0 6px 20px rgba(255, 192, 203, 0.2),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.2);
+        }
+
         /* Responsive adjustments */
         @media (max-width: 768px) {
             #content-area {
                 width: 80%;
                 height: 70%;
+            }
+
+            #button-container {
+                gap: 30px;
+                bottom: 12%;
+            }
+
+            .response-button {
+                padding: 10px 28px;
+                font-size: 16px;
             }
         }
 
@@ -95,6 +188,16 @@
             #content-area {
                 width: 90%;
                 height: 75%;
+            }
+
+            #button-container {
+                gap: 20px;
+                bottom: 10%;
+            }
+
+            .response-button {
+                padding: 8px 24px;
+                font-size: 14px;
             }
         }
     </style>
@@ -169,20 +272,30 @@
 
         <!-- Content Area (framed by trees) -->
         <div id="content-area">
-            <!-- Future phases will add stars and interactive elements here -->
+            <!-- Interactive buttons appear after text formation -->
+            <div id="button-container">
+                <button id="yes-button" class="response-button">Yes</button>
+                <button id="no-button" class="response-button">No</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // ===== PHASE 3: TEXT FORMATION ANIMATION =====
+        // ===== PHASE 4: INTERACTIVE BUTTONS =====
 
         // Canvas setup
         const canvas = document.getElementById('star-canvas');
         const ctx = canvas.getContext('2d');
 
+        // DOM elements
+        const buttonContainer = document.getElementById('button-container');
+        const yesButton = document.getElementById('yes-button');
+        const noButton = document.getElementById('no-button');
+
         // Animation configuration
         const STAR_COUNT = 85; // 75-100 stars
         const ANIMATION_DURATION = 2.5; // seconds
+        const BUTTON_DELAY = 1.0; // seconds after text formation
         const stars = [];
         let animationStartTime = null;
         let isAnimating = false;
@@ -384,6 +497,11 @@
                 if (progress >= 1.0) {
                     isAnimating = false;
                     console.log('Text formation complete: "Will you be my partner?"');
+
+                    // Show buttons after a delay
+                    setTimeout(() => {
+                        showButtons();
+                    }, BUTTON_DELAY * 1000);
                 }
             }
 
@@ -393,10 +511,41 @@
             animationId = requestAnimationFrame(animate);
         }
 
+        // Show interactive buttons
+        function showButtons() {
+            buttonContainer.classList.add('visible');
+            console.log('Buttons revealed - awaiting response...');
+        }
+
+        // Handle button responses
+        function handleResponse(response) {
+            console.log(`Response: ${response}`);
+
+            // Hide buttons
+            buttonContainer.classList.remove('visible');
+
+            // Trigger transformation sequence (same for both)
+            setTimeout(() => {
+                startTransformation();
+            }, 500);
+        }
+
+        // Transformation sequence (placeholder for future phase)
+        function startTransformation() {
+            console.log('Starting transformation sequence...');
+            // Future: constellation formation, celebration animation, etc.
+        }
+
+        // Button click handlers
+        yesButton.addEventListener('click', () => handleResponse('Yes'));
+        noButton.addEventListener('click', () => handleResponse('No'));
+
         // Handle window resize
         window.addEventListener('resize', () => {
             resizeCanvas();
             generateStars();
+            // Hide buttons on resize to avoid positioning issues
+            buttonContainer.classList.remove('visible');
         });
 
         // Initialize scene
