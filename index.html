@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Question Under the Stars</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Georgia', serif;
+        }
+
+        #scene-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-image: url('night-sky.jpg'); /* Replace with your image filename */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        /* SVG Trees Container */
+        #trees-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* Left tree group */
+        .tree-left {
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0.95;
+        }
+
+        /* Right tree group */
+        .tree-right {
+            position: absolute;
+            top: 0;
+            right: 0;
+            opacity: 0.95;
+        }
+
+        /* Star canvas - behind trees, above background */
+        #star-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Content area - centered and framed by trees */
+        #content-area {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60%;
+            max-width: 800px;
+            height: 60%;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Interactive buttons container */
+        #button-container {
+            position: absolute;
+            bottom: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 40px;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+            z-index: 20;
+        }
+
+        #button-container.visible {
+            opacity: 1;
+        }
+
+        /* Ethereal button styling */
+        .response-button {
+            padding: 12px 32px;
+            font-family: 'Georgia', serif;
+            font-size: 18px;
+            font-weight: normal;
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 30px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Subtle glow effect */
+        .response-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .response-button:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 1);
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .response-button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .response-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.15),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Specific button variants */
+        #yes-button:hover {
+            border-color: rgba(173, 216, 230, 0.7);
+            box-shadow: 0 6px 25px rgba(173, 216, 230, 0.3),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.2);
+        }
+
+        #no-button:hover {
+            border-color: rgba(255, 192, 203, 0.5);
+            box-shadow: 0 6px 20px rgba(255, 192, 203, 0.2),
+                        inset 0 1px 1px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            #content-area {
+                width: 80%;
+                height: 70%;
+            }
+
+            #button-container {
+                gap: 30px;
+                bottom: 12%;
+            }
+
+            .response-button {
+                padding: 10px 28px;
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #content-area {
+                width: 90%;
+                height: 75%;
+            }
+
+            #button-container {
+                gap: 20px;
+                bottom: 10%;
+            }
+
+            .response-button {
+                padding: 8px 24px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="scene-container">
+        <!-- Star Field Canvas -->
+        <canvas id="star-canvas"></canvas>
+
+        <!-- Trees SVG Container -->
+        <div id="trees-container">
+            <!-- Left side trees (Douglas Fir) -->
+            <svg class="tree-left" width="400" height="100%" viewBox="0 0 400 800" preserveAspectRatio="xMinYMin meet">
+                <!-- Douglas Fir silhouette - left side -->
+                <g fill="#0a0d1a" opacity="0.9">
+                    <!-- Main trunk -->
+                    <path d="M 50 800 L 50 300 L 70 300 L 70 800 Z"/>
+
+                    <!-- Branches - layered triangular shapes for fir appearance -->
+                    <path d="M 60 320 L 20 380 L 100 380 Z"/>
+                    <path d="M 60 360 L 15 430 L 105 430 Z"/>
+                    <path d="M 60 410 L 10 490 L 110 490 Z"/>
+                    <path d="M 60 470 L 5 560 L 115 560 Z"/>
+                    <path d="M 60 540 L 0 630 L 120 630 Z"/>
+                    <path d="M 60 610 L 0 710 L 120 710 Z"/>
+                </g>
+
+                <!-- Western Red Cedar - left side, slightly behind -->
+                <g fill="#0d1020" opacity="0.85">
+                    <path d="M 180 800 L 180 250 L 195 250 L 195 800 Z"/>
+
+                    <!-- Cedar has a more irregular, drooping branch pattern -->
+                    <path d="M 187 270 L 150 310 L 160 310 L 140 340 L 230 340 L 210 310 L 220 310 Z"/>
+                    <path d="M 187 320 L 145 365 L 155 365 L 135 400 L 240 400 L 220 365 L 230 365 Z"/>
+                    <path d="M 187 380 L 140 430 L 150 430 L 130 470 L 250 470 L 230 430 L 240 430 Z"/>
+                    <path d="M 187 450 L 135 505 L 145 505 L 125 550 L 260 550 L 240 505 L 250 505 Z"/>
+                    <path d="M 187 530 L 130 590 L 140 590 L 120 640 L 270 640 L 250 590 L 260 590 Z"/>
+                    <path d="M 187 620 L 125 685 L 135 685 L 115 740 L 280 740 L 260 685 L 270 685 Z"/>
+                </g>
+            </svg>
+
+            <!-- Right side trees (Douglas Fir and Western Red Cedar) -->
+            <svg class="tree-right" width="400" height="100%" viewBox="0 0 400 800" preserveAspectRatio="xMaxYMin meet">
+                <!-- Douglas Fir silhouette - right side -->
+                <g fill="#0a0d1a" opacity="0.9">
+                    <!-- Main trunk -->
+                    <path d="M 330 800 L 330 300 L 350 300 L 350 800 Z"/>
+
+                    <!-- Branches -->
+                    <path d="M 340 320 L 300 380 L 380 380 Z"/>
+                    <path d="M 340 360 L 295 430 L 385 430 Z"/>
+                    <path d="M 340 410 L 290 490 L 390 490 Z"/>
+                    <path d="M 340 470 L 285 560 L 395 560 Z"/>
+                    <path d="M 340 540 L 280 630 L 400 630 Z"/>
+                    <path d="M 340 610 L 280 710 L 400 710 Z"/>
+                </g>
+
+                <!-- Western Red Cedar - right side -->
+                <g fill="#0d1020" opacity="0.85">
+                    <path d="M 205 800 L 205 250 L 220 250 L 220 800 Z"/>
+
+                    <!-- Cedar branches -->
+                    <path d="M 212 270 L 180 310 L 190 310 L 170 340 L 260 340 L 240 310 L 250 310 Z"/>
+                    <path d="M 212 320 L 175 365 L 185 365 L 160 400 L 270 400 L 245 365 L 255 365 Z"/>
+                    <path d="M 212 380 L 170 430 L 180 430 L 150 470 L 280 470 L 250 430 L 260 430 Z"/>
+                    <path d="M 212 450 L 165 505 L 175 505 L 140 550 L 290 550 L 255 505 L 265 505 Z"/>
+                    <path d="M 212 530 L 160 590 L 170 590 L 130 640 L 300 640 L 260 590 L 270 590 Z"/>
+                    <path d="M 212 620 L 155 685 L 165 685 L 120 740 L 310 740 L 265 685 L 275 685 Z"/>
+                </g>
+            </svg>
+        </div>
+
+        <!-- Content Area (framed by trees) -->
+        <div id="content-area">
+            <!-- Interactive buttons appear after text formation -->
+            <div id="button-container">
+                <button id="yes-button" class="response-button">Yes</button>
+                <button id="no-button" class="response-button">No</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== PHASE 5: CONSTELLATION TRANSFORMATION =====
+
+        // Canvas setup
+        const canvas = document.getElementById('star-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // DOM elements
+        const buttonContainer = document.getElementById('button-container');
+        const yesButton = document.getElementById('yes-button');
+        const noButton = document.getElementById('no-button');
+
+        // Animation configuration
+        const STAR_COUNT = 85; // 75-100 stars
+        const ANIMATION_DURATION = 2.5; // seconds
+        const BUTTON_DELAY = 1.0; // seconds after text formation
+        const CONSTELLATION_DURATION = 2.0; // seconds for constellation formation
+        const stars = [];
+        let animationStartTime = null;
+        let isAnimating = false;
+        let isFormingConstellations = false;
+
+        // Star class for managing individual stars
+        class Star {
+            constructor(x, y, radius, color, twinkleSpeed, twinkleOffset) {
+                // Current position
+                this.x = x;
+                this.y = y;
+
+                // Initial random position (for animation start)
+                this.startX = x;
+                this.startY = y;
+
+                // Target position (for text formation)
+                this.targetX = x;
+                this.targetY = y;
+
+                this.radius = radius;
+                this.color = color;
+                this.twinkleSpeed = twinkleSpeed;
+                this.twinkleOffset = twinkleOffset;
+            }
+
+            // Set target position for text formation
+            setTarget(targetX, targetY) {
+                this.targetX = targetX;
+                this.targetY = targetY;
+            }
+
+            // Update position based on animation progress
+            updatePosition(progress) {
+                // Ease-in-out cubic function
+                const eased = progress < 0.5
+                    ? 4 * progress * progress * progress
+                    : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+                this.x = this.startX + (this.targetX - this.startX) * eased;
+                this.y = this.startY + (this.targetY - this.startY) * eased;
+            }
+
+            // Calculate opacity based on time for twinkle effect
+            getOpacity(time) {
+                // Sine wave for smooth pulsing (0.5 to 1.0 opacity range)
+                return 0.5 + 0.5 * Math.sin(time * this.twinkleSpeed + this.twinkleOffset);
+            }
+
+            draw(time) {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.getOpacity(time);
+                ctx.fill();
+                ctx.globalAlpha = 1.0; // Reset alpha
+            }
+        }
+
+        // Simple dot-matrix letter definitions (5x7 grid)
+        // Each letter is an array of [x, y] coordinates
+        const LETTERS = {
+            'W': [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[1,5],[2,4],[2,5],[2,6],[3,5],[4,0],[4,1],[4,2],[4,3],[4,4],[4,5],[4,6]],
+            'I': [[0,0],[1,0],[2,0],[2,1],[2,2],[2,3],[2,4],[2,5],[0,6],[1,6],[2,6],[3,6],[4,6]],
+            'L': [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[1,6],[2,6],[3,6],[4,6]],
+            'Y': [[0,0],[0,1],[0,2],[1,2],[2,3],[2,4],[2,5],[2,6],[3,2],[4,0],[4,1],[4,2]],
+            'O': [[1,0],[2,0],[3,0],[0,1],[4,1],[0,2],[4,2],[0,3],[4,3],[0,4],[4,4],[0,5],[4,5],[1,6],[2,6],[3,6]],
+            'U': [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[1,6],[2,6],[3,6],[4,0],[4,1],[4,2],[4,3],[4,4],[4,5]],
+            'B': [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[1,0],[2,0],[3,0],[4,1],[4,2],[3,3],[2,3],[1,3],[4,4],[4,5],[3,6],[2,6],[1,6]],
+            'E': [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[1,0],[2,0],[3,0],[4,0],[1,3],[2,3],[3,3],[1,6],[2,6],[3,6],[4,6]],
+            'M': [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[1,1],[2,2],[3,1],[4,0],[4,1],[4,2],[4,3],[4,4],[4,5],[4,6]],
+            'P': [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[1,0],[2,0],[3,0],[4,1],[4,2],[3,3],[2,3],[1,3]],
+            'A': [[2,0],[1,1],[3,1],[0,2],[4,2],[0,3],[4,3],[1,3],[2,3],[3,3],[0,4],[4,4],[0,5],[4,5],[0,6],[4,6]],
+            'R': [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[1,0],[2,0],[3,0],[4,1],[4,2],[3,3],[2,3],[1,3],[2,4],[3,5],[4,6]],
+            'T': [[0,0],[1,0],[2,0],[3,0],[4,0],[2,1],[2,2],[2,3],[2,4],[2,5],[2,6]],
+            'N': [[0,0],[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[1,1],[2,2],[2,3],[3,4],[4,0],[4,1],[4,2],[4,3],[4,4],[4,5],[4,6]],
+            '?': [[1,0],[2,0],[3,0],[0,1],[4,1],[4,2],[3,3],[2,4],[2,6]],
+            ' ': []
+        };
+
+        // Constellation patterns (normalized 0-1 coordinates)
+        // Orca Whale - left constellation
+        const ORCA_PATTERN = [
+            // Dorsal fin (distinctive feature)
+            [0.45, 0.15], [0.48, 0.10], [0.51, 0.05], [0.54, 0.10], [0.57, 0.15],
+            // Head and rostrum
+            [0.20, 0.40], [0.25, 0.35], [0.30, 0.32], [0.35, 0.30],
+            // Eye patch
+            [0.32, 0.36],
+            // Upper body
+            [0.40, 0.30], [0.50, 0.25], [0.60, 0.28], [0.70, 0.32],
+            // Lower body / belly
+            [0.25, 0.45], [0.35, 0.48], [0.45, 0.50], [0.55, 0.48], [0.65, 0.45], [0.72, 0.42],
+            // Tail section
+            [0.75, 0.38], [0.80, 0.35], [0.83, 0.32],
+            // Tail flukes (spread)
+            [0.85, 0.25], [0.88, 0.20], [0.90, 0.28], [0.92, 0.35], [0.90, 0.42], [0.88, 0.48],
+            // Pectoral fin
+            [0.40, 0.52], [0.38, 0.58], [0.36, 0.63], [0.35, 0.68]
+        ];
+
+        // Stag - right constellation
+        const STAG_PATTERN = [
+            // Antlers (most distinctive feature) - left antler
+            [0.35, 0.05], [0.33, 0.12], [0.30, 0.18], [0.28, 0.10], [0.25, 0.15],
+            // Right antler
+            [0.50, 0.05], [0.52, 0.12], [0.55, 0.18], [0.57, 0.10], [0.60, 0.15],
+            // Head
+            [0.42, 0.22], [0.40, 0.28], [0.43, 0.32], [0.47, 0.32], [0.50, 0.28],
+            // Ears
+            [0.38, 0.20], [0.52, 0.20],
+            // Neck
+            [0.45, 0.36], [0.44, 0.42], [0.46, 0.48],
+            // Back line
+            [0.48, 0.52], [0.52, 0.54], [0.56, 0.55], [0.60, 0.54],
+            // Chest/front body
+            [0.42, 0.50], [0.40, 0.56], [0.42, 0.62],
+            // Belly line
+            [0.48, 0.58], [0.52, 0.60], [0.56, 0.60],
+            // Rear
+            [0.62, 0.52], [0.64, 0.58], [0.64, 0.64],
+            // Front legs
+            [0.44, 0.68], [0.44, 0.75], [0.44, 0.82],
+            [0.48, 0.66], [0.48, 0.73], [0.48, 0.80],
+            // Back legs
+            [0.58, 0.66], [0.58, 0.73], [0.58, 0.80],
+            [0.62, 0.68], [0.62, 0.75], [0.62, 0.82],
+            // Tail
+            [0.66, 0.50], [0.68, 0.48], [0.70, 0.46]
+        ];
+
+        // Initialize canvas size
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        // Generate text positions from letter definitions
+        function generateTextPositions(text, centerX, centerY, dotSize) {
+            const positions = [];
+            const lines = text.split('\n');
+            const lineHeight = 9 * dotSize;
+            const totalHeight = lines.length * lineHeight;
+            let startY = centerY - totalHeight / 2;
+
+            lines.forEach((line, lineIndex) => {
+                line = line.toUpperCase();
+                const lineWidth = line.split('').reduce((width, char) => {
+                    return width + (char === ' ' ? 4 : 6);
+                }, -1) * dotSize;
+
+                let startX = centerX - lineWidth / 2;
+                let currentX = startX;
+
+                for (let char of line) {
+                    const letterDots = LETTERS[char] || [];
+                    letterDots.forEach(([dx, dy]) => {
+                        positions.push({
+                            x: currentX + dx * dotSize,
+                            y: startY + lineIndex * lineHeight + dy * dotSize
+                        });
+                    });
+                    currentX += (char === ' ' ? 4 : 6) * dotSize;
+                }
+            });
+
+            return positions;
+        }
+
+        // Generate stars with random positions
+        function generateStars() {
+            stars.length = 0;
+
+            const width = canvas.width;
+            const height = canvas.height;
+
+            // Avoid tree areas
+            const safeMarginX = width * 0.15;
+            const safeStartX = safeMarginX;
+            const safeEndX = width - safeMarginX;
+            const safeWidth = safeEndX - safeStartX;
+
+            // Create stars with variation
+            for (let i = 0; i < STAR_COUNT; i++) {
+                const x = safeStartX + Math.random() * safeWidth;
+                const y = Math.random() * height;
+                const radius = 0.8 + Math.random() * 1.7;
+
+                const colorChoice = Math.random();
+                let color;
+                if (colorChoice < 0.7) {
+                    color = `rgb(255, 255, ${240 + Math.floor(Math.random() * 15)})`;
+                } else {
+                    color = `rgb(${220 + Math.floor(Math.random() * 35)}, ${230 + Math.floor(Math.random() * 25)}, 255)`;
+                }
+
+                const twinkleSpeed = 0.3 + Math.random() * 0.5;
+                const twinkleOffset = Math.random() * Math.PI * 2;
+
+                stars.push(new Star(x, y, radius, color, twinkleSpeed, twinkleOffset));
+            }
+
+            // Set text formation targets
+            setTextTargets();
+        }
+
+        // Set target positions for text formation
+        function setTextTargets() {
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const dotSize = Math.min(canvas.width, canvas.height) * 0.012; // Responsive sizing
+
+            const text = "Will you\nbe my partner?";
+            const positions = generateTextPositions(text, centerX, centerY, dotSize);
+
+            // Assign positions to stars
+            stars.forEach((star, i) => {
+                if (i < positions.length) {
+                    star.setTarget(positions[i].x, positions[i].y);
+                } else {
+                    // Extra stars stay in random positions
+                    star.setTarget(star.startX, star.startY);
+                }
+            });
+        }
+
+        // Generate constellation positions
+        function generateConstellationPositions() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const centerY = height / 2;
+
+            // Calculate constellation sizing (responsive)
+            const constellationSize = Math.min(width, height) * 0.25;
+
+            // Orca on the left (centered in left third of screen)
+            const orcaCenterX = width * 0.3;
+            const orcaPositions = ORCA_PATTERN.map(([x, y]) => ({
+                x: orcaCenterX - constellationSize * 0.5 + x * constellationSize,
+                y: centerY - constellationSize * 0.4 + y * constellationSize
+            }));
+
+            // Stag on the right (centered in right third of screen)
+            const stagCenterX = width * 0.7;
+            const stagPositions = STAG_PATTERN.map(([x, y]) => ({
+                x: stagCenterX - constellationSize * 0.5 + x * constellationSize,
+                y: centerY - constellationSize * 0.45 + y * constellationSize
+            }));
+
+            // Combine both constellations
+            return [...orcaPositions, ...stagPositions];
+        }
+
+        // Set constellation targets for transformation
+        function setConstellationTargets() {
+            const positions = generateConstellationPositions();
+
+            // Assign positions to stars
+            stars.forEach((star, i) => {
+                if (i < positions.length) {
+                    star.setTarget(positions[i].x, positions[i].y);
+                } else {
+                    // Extra stars fade to random positions around constellations
+                    const randSide = Math.random() < 0.5 ? 0.3 : 0.7;
+                    star.setTarget(
+                        canvas.width * randSide + (Math.random() - 0.5) * 200,
+                        canvas.height / 2 + (Math.random() - 0.5) * 300
+                    );
+                }
+            });
+        }
+
+        // Start text formation animation
+        function startTextFormation() {
+            if (!isAnimating) {
+                isAnimating = true;
+                animationStartTime = Date.now() / 1000;
+                console.log('Starting text formation animation...');
+            }
+        }
+
+        // Start constellation formation
+        function startConstellationFormation() {
+            if (!isFormingConstellations) {
+                // Update targets to constellation positions
+                setConstellationTargets();
+
+                // Reset animation timing
+                isFormingConstellations = true;
+                animationStartTime = Date.now() / 1000;
+                console.log('Forming constellations: Orca (left) and Stag (right)...');
+            }
+        }
+
+        // Animation loop
+        let animationId;
+        function animate() {
+            const time = Date.now() * 0.001;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Update star positions if animating text formation
+            if (isAnimating) {
+                const elapsed = time - animationStartTime;
+                const progress = Math.min(elapsed / ANIMATION_DURATION, 1.0);
+
+                stars.forEach(star => star.updatePosition(progress));
+
+                if (progress >= 1.0) {
+                    isAnimating = false;
+                    console.log('Text formation complete: "Will you be my partner?"');
+
+                    // Show buttons after a delay
+                    setTimeout(() => {
+                        showButtons();
+                    }, BUTTON_DELAY * 1000);
+                }
+            }
+
+            // Update star positions if forming constellations
+            if (isFormingConstellations) {
+                const elapsed = time - animationStartTime;
+                const progress = Math.min(elapsed / CONSTELLATION_DURATION, 1.0);
+
+                stars.forEach(star => star.updatePosition(progress));
+
+                if (progress >= 1.0) {
+                    isFormingConstellations = false;
+                    console.log('Constellation formation complete! ✨');
+                    console.log('Orca (left) represents strength and connection to the ocean.');
+                    console.log('Stag (right) represents grace, nobility, and the forest.');
+                }
+            }
+
+            // Draw all stars
+            stars.forEach(star => star.draw(time));
+
+            animationId = requestAnimationFrame(animate);
+        }
+
+        // Show interactive buttons
+        function showButtons() {
+            buttonContainer.classList.add('visible');
+            console.log('Buttons revealed - awaiting response...');
+        }
+
+        // Handle button responses
+        function handleResponse(response) {
+            console.log(`Response: ${response}`);
+
+            // Hide buttons
+            buttonContainer.classList.remove('visible');
+
+            // Trigger transformation sequence (same for both)
+            setTimeout(() => {
+                startTransformation();
+            }, 500);
+        }
+
+        // Transformation sequence - dissolve text and form constellations
+        function startTransformation() {
+            console.log('Starting transformation sequence...');
+            console.log('Text dissolving, constellations forming...');
+
+            // Start constellation formation immediately
+            startConstellationFormation();
+        }
+
+        // Button click handlers
+        yesButton.addEventListener('click', () => handleResponse('Yes'));
+        noButton.addEventListener('click', () => handleResponse('No'));
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            generateStars();
+            // Hide buttons on resize to avoid positioning issues
+            buttonContainer.classList.remove('visible');
+        });
+
+        // Initialize scene
+        function init() {
+            resizeCanvas();
+            generateStars();
+            animate();
+
+            // Start text formation after 1 second
+            setTimeout(() => {
+                startTextFormation();
+            }, 1000);
+
+            console.log('Emma Partner Proposal - Phase 5: Full Interactive Experience Ready');
+        }
+
+        // Start when page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
