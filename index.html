@@ -69,14 +69,26 @@
         /* Interactive buttons container */
         #button-container {
             position: absolute;
-            bottom: 15%;
+            bottom: 20%;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            gap: 40px;
+            gap: 20px;
             opacity: 0;
             transition: opacity 1.5s ease-in-out;
             z-index: 20;
+            width: auto;
+            justify-content: center;
+        }
+
+        /* Mobile responsive button positioning */
+        @media (max-width: 768px) {
+            #button-container {
+                bottom: 25%;
+                gap: 15px;
+                width: 90%;
+                max-width: 300px;
+            }
         }
 
         #button-container.visible {
@@ -100,6 +112,18 @@
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2),
                         inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            flex: 1;
+            max-width: 120px;
+            text-align: center;
+        }
+
+        /* Mobile responsive button styling */
+        @media (max-width: 768px) {
+            .response-button {
+                padding: 10px 24px;
+                font-size: 16px;
+                max-width: 100px;
+            }
         }
 
         /* Subtle glow effect */
@@ -542,12 +566,14 @@
 
         // Set target positions for text formation
         function setTextTargets() {
-            // Constrain to center area to avoid trees on sides - wider margins for full text
-            const safeMarginX = canvas.width * 0.20; // 20% margin on each side (wider for text)
+            // Responsive centering - truly centered on mobile, slight offset on desktop
+            const isMobile = canvas.width < 768;
+            const safeMarginX = isMobile ? canvas.width * 0.10 : canvas.width * 0.20; // Smaller margins on mobile
             const safeMarginY = canvas.height * 0.12; // 12% margin top/bottom
-            const centerX = canvas.width / 2 + 25; // Shift 25 pixels to the right to avoid trees (40 - 15)
+            // Center text perfectly on mobile, slight right shift on desktop to avoid trees
+            const centerX = isMobile ? canvas.width / 2 : canvas.width / 2 + 25;
             const centerY = canvas.height / 2 - canvas.height * 0.08; // Slightly higher to avoid bottom trees
-            const dotSize = Math.min(canvas.width, canvas.height) * 0.009; // Smaller to ensure full text fits
+            const dotSize = Math.min(canvas.width, canvas.height) * (isMobile ? 0.008 : 0.009); // Slightly smaller on mobile
 
             const text = "Will you\nbe my partner?";
             const positions = generateTextPositions(text, centerX, centerY, dotSize);
