@@ -216,7 +216,7 @@
         const noButton = document.getElementById('no-button');
 
         // Animation configuration
-        const STAR_COUNT = 300; // Increased for clear text formation
+        const STAR_COUNT = 400; // Increased to fill more sky space with better distribution
         const ANIMATION_DURATION = 4.0; // seconds - longer for ultra-smooth fade
         const BUTTON_DELAY = 1.0; // seconds after text formation
         const CONSTELLATION_DURATION = 2.0; // seconds for constellation formation
@@ -287,9 +287,9 @@
                 }
             }
             
-            // Get display radius (text stars are larger)
+            // Get display radius (text stars are larger for visibility)
             getDisplayRadius() {
-                return this.isTextStar ? this.radius * 2.5 : this.radius;
+                return this.isTextStar ? this.radius * 2.0 : this.radius; // Reduced multiplier for smaller stars
             }
 
             draw(time) {
@@ -439,11 +439,41 @@
             const width = canvas.width;
             const height = canvas.height;
 
-            // Create stars with variation across the full screen
+            // Create stars with variation, avoiding tree areas but filling more sky space
+            // Use smaller margins to fill more of the visible sky
+            const skyMarginX = width * 0.15; // 15% margin on each side (smaller to fill more space)
+            const skyMarginY = height * 0.20; // 20% margin on bottom (smaller to fill more space)
+            const skyStartX = skyMarginX;
+            const skyEndX = width - skyMarginX;
+            const skyWidth = skyEndX - skyStartX;
+            const skyStartY = 0; // Start from top
+            const skyEndY = height - skyMarginY; // Avoid bottom tree area
+            const skyHeight = skyEndY - skyStartY;
+            
             for (let i = 0; i < STAR_COUNT; i++) {
-                const x = Math.random() * width;
-                const y = Math.random() * height;
-                const radius = 1.5 + Math.random() * 2.5; // Larger stars for visibility
+                // More random distribution - add some variation to avoid square clustering
+                // Use a weighted random distribution that favors center but allows spread
+                const centerWeight = 0.3; // 30% chance to be near center, 70% random
+                let x, y;
+                
+                if (Math.random() < centerWeight) {
+                    // Cluster some stars near center
+                    const centerX = width / 2;
+                    const centerY = height / 3; // Upper third of sky
+                    const spreadX = skyWidth * 0.4;
+                    const spreadY = skyHeight * 0.4;
+                    x = centerX + (Math.random() - 0.5) * spreadX;
+                    y = centerY + (Math.random() - 0.5) * spreadY;
+                    // Clamp to sky area
+                    x = Math.max(skyStartX, Math.min(skyEndX, x));
+                    y = Math.max(skyStartY, Math.min(skyEndY, y));
+                } else {
+                    // Random distribution across sky area
+                    x = skyStartX + Math.random() * skyWidth;
+                    y = skyStartY + Math.random() * skyHeight;
+                }
+                
+                const radius = 0.8 + Math.random() * 1.2; // Smaller stars to match background image
 
                 const colorChoice = Math.random();
                 let color;
