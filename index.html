@@ -594,28 +594,51 @@
             // Position constellations in upper third of sky (higher up)
             const centerY = height * 0.35; // Upper third instead of center
 
-            // Calculate constellation sizing (responsive, 50% larger for better visibility)
-            const constellationSize = Math.min(width, height) * 0.42; // 0.28 * 1.5 = 0.42 (50% increase)
+            // Calculate constellation sizing (responsive, smaller on mobile to prevent cutoff)
+            const isMobile = width < 768; // Mobile breakpoint
+            const constellationSize = isMobile 
+                ? Math.min(width, height) * 0.32 // Smaller on mobile
+                : Math.min(width, height) * 0.42; // Larger on desktop
 
-            // Center point for constellations (shifted right to avoid trees)
-            const centerX = width / 2 + 75;
-            
-            // Fixed spacing between constellations (consistent regardless of window size)
-            const spacingBetweenConstellations = 400; // Fixed 400px spacing
+            // Responsive positioning: closer together on mobile, further apart on desktop
+            // Use fixed spacing that scales with screen size to prevent cutoff
+            const centerX = width / 2 + (isMobile ? 30 : 75); // Less shift on mobile
+            const spacing = isMobile ? width * 0.25 : Math.min(width * 0.30, 450); // Max 450px on desktop
             
             // Orca on the left (centered around centerX minus half spacing)
-            const orcaCenterX = centerX - spacingBetweenConstellations / 2;
+            const orcaCenterX = centerX - spacing / 2;
             const orcaPositions = ORCA_PATTERN.map(([x, y]) => ({
                 x: orcaCenterX - constellationSize * 0.5 + x * constellationSize,
                 y: centerY - constellationSize * 0.4 + y * constellationSize
             }));
 
             // Stag on the right (centered around centerX plus half spacing)
-            const stagCenterX = centerX + spacingBetweenConstellations / 2;
+            const stagCenterX = centerX + spacing / 2;
             const stagPositions = STAG_PATTERN.map(([x, y]) => ({
                 x: stagCenterX - constellationSize * 0.5 + x * constellationSize,
                 y: centerY - constellationSize * 0.45 + y * constellationSize
             }));
+            
+            // Ensure constellations don't go off-screen on mobile
+            const minMargin = constellationSize * 0.6; // Minimum margin from edges
+            const maxX = width - minMargin;
+            const minX = minMargin;
+            
+            // Adjust positions if they're too close to edges
+            const orcaAdjust = Math.max(0, minX - Math.min(...orcaPositions.map(p => p.x)));
+            const stagAdjust = Math.min(0, maxX - Math.max(...stagPositions.map(p => p.x)));
+            
+            if (orcaAdjust > 0 || stagAdjust < 0) {
+                // Shift both constellations to fit
+                const shift = (orcaAdjust - stagAdjust) / 2;
+                return [
+                    ...orcaPositions.map(p => ({ x: p.x + shift, y: p.y })),
+                    ...stagPositions.map(p => ({ x: p.x + shift, y: p.y }))
+                ];
+            }
+            
+            // Combine both constellations
+            return [...orcaPositions, ...stagPositions];
 
             // Combine both constellations
             return [...orcaPositions, ...stagPositions];
