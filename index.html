@@ -283,6 +283,8 @@
                         // Fade-in complete, add subtle twinkle with brightness variation
                         // Use full brightness (1.0) as base to prevent dimming at end
                         const baseOpacity = 1.0 + 0.1 * Math.sin(time * this.twinkleSpeed + this.twinkleOffset);
+                        // Brightness transition is handled in the constellation animation loop
+                        // Use current brightness multiplier (which is being smoothly updated during animation)
                         return Math.min(1.0, baseOpacity * this.textStarVariation.brightnessMultiplier);
                     } else {
                         // During fade-in: use fadeInProgress with brightness variation
@@ -390,22 +392,22 @@
         // Constellation patterns (normalized 0-1 coordinates)
         // Orca Whale - left constellation (profile view, facing right)
         const ORCA_PATTERN = [
-            // Dorsal fin (most distinctive - tall and prominent)
-            [0.50, 0.20], [0.52, 0.12], [0.54, 0.08], [0.56, 0.12], [0.58, 0.20],
-            // Head and rostrum (pointed snout)
-            [0.25, 0.45], [0.28, 0.42], [0.32, 0.40], [0.36, 0.38], [0.40, 0.36],
-            // Eye patch (distinctive white patch area)
-            [0.30, 0.44], [0.32, 0.46], [0.34, 0.44],
-            // Back line (curved)
-            [0.42, 0.35], [0.48, 0.30], [0.54, 0.28], [0.60, 0.30], [0.66, 0.35],
-            // Belly line (curved, opposite of back)
-            [0.30, 0.50], [0.38, 0.52], [0.46, 0.54], [0.54, 0.52], [0.62, 0.50],
-            // Tail section (narrowing)
-            [0.70, 0.40], [0.74, 0.38], [0.78, 0.36],
-            // Tail flukes (spread horizontally - distinctive)
-            [0.80, 0.30], [0.82, 0.25], [0.84, 0.32], [0.86, 0.40], [0.84, 0.45], [0.82, 0.50],
-            // Pectoral fin (on the side)
-            [0.42, 0.56], [0.40, 0.62], [0.38, 0.68], [0.36, 0.72]
+            // Dorsal fin (most distinctive - tall, curved, prominent)
+            [0.50, 0.18], [0.52, 0.10], [0.54, 0.05], [0.56, 0.08], [0.58, 0.12], [0.60, 0.18],
+            // Head and rostrum (rounded, bulbous head with pointed snout)
+            [0.20, 0.42], [0.24, 0.40], [0.28, 0.38], [0.32, 0.36], [0.36, 0.35], [0.40, 0.34],
+            // Eye patch (distinctive white patch - more defined)
+            [0.26, 0.40], [0.28, 0.42], [0.30, 0.44], [0.32, 0.42], [0.34, 0.40],
+            // Back line (smoothly curved, streamlined)
+            [0.42, 0.33], [0.48, 0.30], [0.54, 0.28], [0.60, 0.29], [0.66, 0.32], [0.72, 0.36],
+            // Belly line (curved, opposite of back, more rounded)
+            [0.28, 0.48], [0.36, 0.50], [0.44, 0.52], [0.52, 0.53], [0.60, 0.52], [0.68, 0.50],
+            // Tail section (narrowing, more defined)
+            [0.74, 0.38], [0.78, 0.36], [0.82, 0.34],
+            // Tail flukes (pointing downward - like emoji outline)
+            [0.84, 0.36], [0.86, 0.40], [0.88, 0.44], [0.90, 0.48], [0.88, 0.52], [0.86, 0.56], [0.84, 0.60], [0.82, 0.64],
+            // Pectoral fin (on the side, more defined shape)
+            [0.40, 0.54], [0.38, 0.60], [0.36, 0.66], [0.34, 0.72], [0.32, 0.76]
         ];
 
         // Stag - right constellation (profile view, facing left)
@@ -543,7 +545,7 @@
             // Constrain to center area to avoid trees on sides - wider margins for full text
             const safeMarginX = canvas.width * 0.20; // 20% margin on each side (wider for text)
             const safeMarginY = canvas.height * 0.12; // 12% margin top/bottom
-            const centerX = canvas.width / 2;
+            const centerX = canvas.width / 2 + 25; // Shift 25 pixels to the right to avoid trees (40 - 15)
             const centerY = canvas.height / 2 - canvas.height * 0.08; // Slightly higher to avoid bottom trees
             const dotSize = Math.min(canvas.width, canvas.height) * 0.009; // Smaller to ensure full text fits
 
@@ -592,18 +594,24 @@
             // Position constellations in upper third of sky (higher up)
             const centerY = height * 0.35; // Upper third instead of center
 
-            // Calculate constellation sizing (responsive, slightly larger for visibility)
-            const constellationSize = Math.min(width, height) * 0.28;
+            // Calculate constellation sizing (responsive, 50% larger for better visibility)
+            const constellationSize = Math.min(width, height) * 0.42; // 0.28 * 1.5 = 0.42 (50% increase)
 
-            // Orca on the left (more centered)
-            const orcaCenterX = width * 0.4;
+            // Center point for constellations (shifted right to avoid trees)
+            const centerX = width / 2 + 75;
+            
+            // Fixed spacing between constellations (consistent regardless of window size)
+            const spacingBetweenConstellations = 400; // Fixed 400px spacing
+            
+            // Orca on the left (centered around centerX minus half spacing)
+            const orcaCenterX = centerX - spacingBetweenConstellations / 2;
             const orcaPositions = ORCA_PATTERN.map(([x, y]) => ({
                 x: orcaCenterX - constellationSize * 0.5 + x * constellationSize,
                 y: centerY - constellationSize * 0.4 + y * constellationSize
             }));
 
-            // Stag on the right (more centered)
-            const stagCenterX = width * 0.6;
+            // Stag on the right (centered around centerX plus half spacing)
+            const stagCenterX = centerX + spacingBetweenConstellations / 2;
             const stagPositions = STAG_PATTERN.map(([x, y]) => ({
                 x: stagCenterX - constellationSize * 0.5 + x * constellationSize,
                 y: centerY - constellationSize * 0.45 + y * constellationSize
@@ -631,9 +639,13 @@
             const orcaStarCount = Math.floor(textStars.length / 2);
             
             textStars.forEach((star, i) => {
-                // Preserve current position (text position) as start position for smooth animation
+                // CRITICAL: Ensure star is at exact current position before setting new target
+                // This prevents frame shift - update start position to current exact position
                 star.startX = star.x;
                 star.startY = star.y;
+                // Also ensure target matches current position initially to prevent any jump
+                star.targetX = star.x;
+                star.targetY = star.y;
                 
                 if (i < orcaStarCount) {
                     // Assign to orca constellation
@@ -647,7 +659,17 @@
                     star.setTarget(stagPositions[stagIndex].x, stagPositions[stagIndex].y);
                 }
                 
-                // Keep text star properties (brightness, size variations) for constellations
+                // CRITICAL: Preserve existing brightness completely during transition
+                // Store target brightness for smooth transition, but don't change current brightness yet
+                // This prevents the frame shift/dimming issue
+                const currentBrightness = star.textStarVariation.brightnessMultiplier || 1.0;
+                const targetBrightness = 0.4 + Math.random() * 0.6; // Wider range: 0.4 to 1.0
+                // Store target brightness for later smooth transition, but keep current for now
+                star.targetBrightness = Math.max(currentBrightness, targetBrightness);
+                // Keep current brightness unchanged to prevent visual jump
+                // Brightness will transition smoothly during animation
+                
+                // Keep text star properties (size variations) for constellations
                 // Don't reset isTextStar - we want to keep the enhanced visibility
             });
             
@@ -732,6 +754,9 @@
                         if (star.isTextStar) {
                             // Set to 1.0 to ensure full visibility - opacity calculation will handle smooth twinkle
                             star.fadeInProgress = 1.0;
+                            // Ensure position is exactly at target to prevent frame shift
+                            star.x = star.targetX;
+                            star.y = star.targetY;
                         }
                     });
                     console.log('Text formation complete: "Will you be my partner"');
@@ -758,12 +783,31 @@
                 stars.forEach(star => {
                     if (star.isTextStar) {
                         star.updatePosition(eased);
+                        // Smoothly transition brightness during constellation formation
+                        if (star.targetBrightness !== undefined) {
+                            const currentBrightness = star.textStarVariation.brightnessMultiplier || 1.0;
+                            // Interpolate brightness based on animation progress
+                            const newBrightness = currentBrightness + (star.targetBrightness - currentBrightness) * eased;
+                            star.textStarVariation.brightnessMultiplier = newBrightness;
+                        }
                     }
                     // Background stars stay in place (already handled in setConstellationTargets)
                 });
 
                 if (progress >= 1.0) {
                     isFormingConstellations = false;
+                    // Ensure all stars are at exact target positions to prevent frame shift
+                    stars.forEach(star => {
+                        if (star.isTextStar) {
+                            star.x = star.targetX;
+                            star.y = star.targetY;
+                            // Complete brightness transition if it was in progress
+                            if (star.targetBrightness !== undefined) {
+                                star.textStarVariation.brightnessMultiplier = star.targetBrightness;
+                                delete star.targetBrightness;
+                            }
+                        }
+                    });
                     console.log('Constellation formation complete! ✨');
                     console.log('Orca (left) represents strength and connection to the ocean.');
                     console.log('Stag (right) represents grace, nobility, and the forest.');
@@ -800,6 +844,17 @@
             console.log('Starting transformation sequence...');
             console.log('Text dissolving, constellations forming...');
 
+            // Ensure all text stars are at exact positions before starting constellation formation
+            // This prevents frame shift
+            stars.forEach(star => {
+                if (star.isTextStar) {
+                    star.x = star.targetX;
+                    star.y = star.targetY;
+                    star.startX = star.x;
+                    star.startY = star.y;
+                }
+            });
+
             // Start constellation formation immediately
             startConstellationFormation();
         }
@@ -812,8 +867,16 @@
         window.addEventListener('resize', () => {
             resizeCanvas();
             generateStars();
+            // Reset all animation states
+            isAnimating = false;
+            isFormingConstellations = false;
             // Hide buttons on resize to avoid positioning issues
             buttonContainer.classList.remove('visible');
+            // Set text targets and restart animation after a brief delay
+            setTextTargets();
+            setTimeout(() => {
+                startTextFormation();
+            }, 100);
         });
 
         // Initialize scene
