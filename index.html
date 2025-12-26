@@ -247,14 +247,19 @@
                 this.isTextStar = false; // Track if this star is part of text
                 this.fadeInProgress = 1.0; // 0 = invisible, 1 = fully visible
                 this.fadeDelay = 0; // Delay before this star starts fading in (for stagger effect)
+                this.textStarVariation = {
+                    sizeMultiplier: 1.0, // Variation in size (0.7 to 1.3)
+                    brightnessMultiplier: 1.0, // Variation in brightness (0.6 to 1.0)
+                    shapeType: 0 // Shape variation: 0 = circle, 1 = cross, 2 = small dot
+                };
             }
 
             // Set target position for text formation
             setTarget(targetX, targetY) {
                 this.targetX = targetX;
                 this.targetY = targetY;
-                // Keep current position - stars will animate from start to target
-                // Don't move immediately - let animation handle the movement
+                // IMPORTANT: Don't change current position - stars stay at startX/startY until animation begins
+                // The animation will handle moving from start to target
             }
 
             // Update position based on animation progress
@@ -273,13 +278,14 @@
                 if (this.isTextStar) {
                     // Text stars: fadeInProgress directly controls opacity (0 = invisible, 1 = fully visible)
                     // During fade-in, fadeInProgress smoothly goes from 0 to 1
-                    // After fade-in complete, add subtle twinkle
+                    // After fade-in complete, add subtle twinkle with brightness variation
                     if (this.fadeInProgress >= 0.999) {
-                        // Fade-in complete, add subtle twinkle
-                        return 0.95 + 0.05 * Math.sin(time * this.twinkleSpeed + this.twinkleOffset);
+                        // Fade-in complete, add subtle twinkle with brightness variation
+                        const baseOpacity = 0.85 + 0.15 * Math.sin(time * this.twinkleSpeed + this.twinkleOffset);
+                        return baseOpacity * this.textStarVariation.brightnessMultiplier;
                     } else {
-                        // During fade-in: use fadeInProgress directly for smooth transition
-                        return this.fadeInProgress;
+                        // During fade-in: use fadeInProgress with brightness variation
+                        return this.fadeInProgress * this.textStarVariation.brightnessMultiplier;
                     }
                 } else {
                     // Background stars: Sine wave for smooth pulsing (0.7 to 1.0 opacity range - brighter)
@@ -287,9 +293,13 @@
                 }
             }
             
-            // Get display radius (text stars are larger for visibility)
+            // Get display radius (text stars are larger for visibility, with variation)
             getDisplayRadius() {
-                return this.isTextStar ? this.radius * 2.0 : this.radius; // Reduced multiplier for smaller stars
+                if (this.isTextStar) {
+                    // Apply size variation to text stars
+                    return this.radius * 2.0 * this.textStarVariation.sizeMultiplier;
+                }
+                return this.radius;
             }
 
             draw(time) {
@@ -300,25 +310,58 @@
                 if (opacity < 0.01) return;
                 
                 if (this.isTextStar) {
-                    // Text stars: brighter glow and larger size
+                    // Text stars: varied shapes, sizes, and brightness
                     ctx.shadowBlur = displayRadius * 3;
                     ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+                    
+                    // Draw different shapes based on variation
+                    const shapeType = this.textStarVariation.shapeType;
+                    ctx.globalAlpha = Math.max(0, Math.min(1, opacity)); // Clamp opacity
+                    
+                    if (shapeType < 0.7) {
+                        // 70% are circles (standard)
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, displayRadius, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgb(255, 255, 255)';
+                        ctx.fill();
+                    } else if (shapeType < 0.9) {
+                        // 20% are cross/sparkle shapes
+                        ctx.strokeStyle = 'rgb(255, 255, 255)';
+                        ctx.lineWidth = Math.max(0.5, displayRadius * 0.2);
+                        ctx.beginPath();
+                        // Horizontal line
+                        ctx.moveTo(this.x - displayRadius * 1.1, this.y);
+                        ctx.lineTo(this.x + displayRadius * 1.1, this.y);
+                        // Vertical line
+                        ctx.moveTo(this.x, this.y - displayRadius * 1.1);
+                        ctx.lineTo(this.x, this.y + displayRadius * 1.1);
+                        ctx.stroke();
+                        // Center dot
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, displayRadius * 0.5, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgb(255, 255, 255)';
+                        ctx.fill();
+                    } else {
+                        // 10% are smaller dots
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, displayRadius * 0.7, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgb(255, 255, 255)';
+                        ctx.fill();
+                    }
                 } else {
                     // Background stars: subtle glow
                     ctx.shadowBlur = this.radius * 2;
                     ctx.shadowColor = this.color;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, displayRadius, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.globalAlpha = Math.max(0, Math.min(1, opacity));
+                    ctx.fill();
                 }
                 
-                // Draw main star with clamped opacity for smooth rendering
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, displayRadius, 0, Math.PI * 2);
-                ctx.fillStyle = this.isTextStar ? 'rgb(255, 255, 255)' : this.color; // Text stars are pure white
-                ctx.globalAlpha = Math.max(0, Math.min(1, opacity)); // Clamp opacity for smooth rendering
-                ctx.fill();
-                
-                // Reset shadow
+                // Reset shadow and alpha
                 ctx.shadowBlur = 0;
-                ctx.globalAlpha = 1.0; // Reset alpha
+                ctx.globalAlpha = 1.0;
             }
         }
 
@@ -491,8 +534,7 @@
                 stars.push(new Star(x, y, radius, color, twinkleSpeed, twinkleOffset));
             }
             
-            // Position stars for text immediately but keep them invisible until animation starts
-            setTextTargets();
+            // Don't set text targets here - wait until animation starts to avoid frame snap
         }
 
         // Set target positions for text formation
@@ -515,11 +557,21 @@
             stars.forEach((star, i) => {
                 if (i < safePositions.length) {
                     // Set target position (star will animate from current random position to here)
+                    // IMPORTANT: Preserve the star's current random position as start position
+                    star.startX = star.x; // Save current random position
+                    star.startY = star.y; // Save current random position
                     star.setTarget(safePositions[i].x, safePositions[i].y);
                     star.isTextStar = true; // Mark as text star for enhanced visibility
                     star.fadeInProgress = 0.3; // Start slightly visible so we can see them moving
                     // Stagger the animation: each star starts slightly later for smooth effect
                     star.fadeDelay = (i / safePositions.length) * 0.2; // Spread over 20% of animation
+                    
+                    // Add variation to text stars: size, brightness, and shape
+                    star.textStarVariation = {
+                        sizeMultiplier: 0.7 + Math.random() * 0.6, // Size varies from 0.7x to 1.3x
+                        brightnessMultiplier: 0.6 + Math.random() * 0.4, // Brightness varies from 0.6 to 1.0
+                        shapeType: Math.random() // Random shape type
+                    };
                 } else {
                     // Extra stars stay in random positions within safe area
                     star.setTarget(
@@ -582,11 +634,11 @@
         // Start text formation animation
         function startTextFormation() {
             if (!isAnimating) {
-                // Set text targets first so stars are positioned correctly
-                setTextTargets();
+                // Text targets are already set in init() - just start the animation
+                // This prevents frame snap since stars are already configured
                 isAnimating = true;
                 animationStartTime = Date.now() / 1000;
-                console.log('Starting text formation animation (fade-in)...');
+                console.log('Starting text formation animation...');
             }
         }
 
@@ -725,6 +777,14 @@
         function init() {
             resizeCanvas();
             generateStars();
+            
+            // Set text targets immediately (but don't start animation yet)
+            // This prevents the frame snap - stars are already configured as text stars
+            setTextTargets();
+            
+            // Reset animation state so stars stay at random positions
+            isAnimating = false;
+            
             animate();
 
             // Start text formation after 1 second
