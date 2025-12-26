@@ -69,7 +69,7 @@
         /* Interactive buttons container */
         #button-container {
             position: absolute;
-            bottom: 20%;
+            bottom: 30%;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -84,7 +84,7 @@
         /* Mobile responsive button positioning */
         @media (max-width: 768px) {
             #button-container {
-                bottom: 25%;
+                bottom: 40%;
                 gap: 15px;
                 width: 90%;
                 max-width: 300px;
@@ -628,7 +628,7 @@
 
             // Responsive positioning: closer together on mobile, further apart on desktop
             // Use fixed spacing that scales with screen size to prevent cutoff
-            const centerX = width / 2 + (isMobile ? 30 : 75); // Less shift on mobile
+            const centerX = width / 2; // Perfectly centered on all devices
             const spacing = isMobile ? width * 0.25 : Math.min(width * 0.30, 450); // Max 450px on desktop
             
             // Orca on the left (centered around centerX minus half spacing)
