@@ -69,13 +69,13 @@
         /* Interactive buttons container */
         #button-container {
             position: absolute;
-            bottom: 30%;
+            bottom: 30%; /* Default fallback, will be set dynamically */
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             gap: 20px;
             opacity: 0;
-            transition: opacity 1.5s ease-in-out;
+            transition: opacity 1.5s ease-in-out, bottom 0.3s ease-out;
             z-index: 20;
             width: auto;
             justify-content: center;
@@ -84,7 +84,6 @@
         /* Mobile responsive button positioning */
         @media (max-width: 768px) {
             #button-container {
-                bottom: 40%;
                 gap: 15px;
                 width: 90%;
                 max-width: 300px;
@@ -564,6 +563,9 @@
             // Don't set text targets here - wait until animation starts to avoid frame snap
         }
 
+        // Store text bottom position for dynamic button positioning
+        let textBottomY = null;
+
         // Set target positions for text formation
         function setTextTargets() {
             // Responsive centering - truly centered on mobile, slight offset on desktop
@@ -577,6 +579,11 @@
 
             const text = "Will you\nbe my partner?";
             const positions = generateTextPositions(text, centerX, centerY, dotSize);
+            
+            // Calculate the bottom Y position of the text for dynamic button positioning
+            if (positions.length > 0) {
+                textBottomY = Math.max(...positions.map(p => p.y)) + dotSize * 8; // Add some padding for dot size
+            }
             
             // Use all positions - don't filter (text should fit within safe area with adjusted margins)
             const safePositions = positions;
@@ -871,8 +878,28 @@
 
         // Show interactive buttons
         function showButtons() {
+            // Position buttons dynamically based on text bottom position
+            if (textBottomY !== null) {
+                const isMobile = canvas.width < 768;
+                const spacingFromText = isMobile ? 60 : 80; // Smaller spacing on mobile (60px vs 80px)
+                const buttonBottom = canvas.height - textBottomY - spacingFromText;
+                // Convert to percentage for CSS
+                const bottomPercent = (buttonBottom / canvas.height) * 100;
+                buttonContainer.style.bottom = `${Math.max(10, bottomPercent)}%`; // Minimum 10% from bottom
+            }
             buttonContainer.classList.add('visible');
             console.log('Buttons revealed - awaiting response...');
+        }
+        
+        // Update button position on resize if buttons are visible
+        function updateButtonPosition() {
+            if (buttonContainer.classList.contains('visible') && textBottomY !== null) {
+                const isMobile = canvas.width < 768;
+                const spacingFromText = isMobile ? 60 : 80;
+                const buttonBottom = canvas.height - textBottomY - spacingFromText;
+                const bottomPercent = (buttonBottom / canvas.height) * 100;
+                buttonContainer.style.bottom = `${Math.max(10, bottomPercent)}%`;
+            }
         }
 
         // Handle button responses
@@ -920,11 +947,17 @@
             isAnimating = false;
             isFormingConstellations = false;
             // Hide buttons on resize to avoid positioning issues
+            const buttonsWereVisible = buttonContainer.classList.contains('visible');
             buttonContainer.classList.remove('visible');
             // Set text targets and restart animation after a brief delay
             setTextTargets();
             setTimeout(() => {
                 startTextFormation();
+                // Update button position if they were visible before resize
+                if (buttonsWereVisible) {
+                    updateButtonPosition();
+                    buttonContainer.classList.add('visible');
+                }
             }, 100);
         });
 
