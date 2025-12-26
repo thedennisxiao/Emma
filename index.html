@@ -281,8 +281,9 @@
                     // After fade-in complete, add subtle twinkle with brightness variation
                     if (this.fadeInProgress >= 0.999) {
                         // Fade-in complete, add subtle twinkle with brightness variation
-                        const baseOpacity = 0.85 + 0.15 * Math.sin(time * this.twinkleSpeed + this.twinkleOffset);
-                        return baseOpacity * this.textStarVariation.brightnessMultiplier;
+                        // Use full brightness (1.0) as base to prevent dimming at end
+                        const baseOpacity = 1.0 + 0.1 * Math.sin(time * this.twinkleSpeed + this.twinkleOffset);
+                        return Math.min(1.0, baseOpacity * this.textStarVariation.brightnessMultiplier);
                     } else {
                         // During fade-in: use fadeInProgress with brightness variation
                         return this.fadeInProgress * this.textStarVariation.brightnessMultiplier;
@@ -387,54 +388,54 @@
         };
 
         // Constellation patterns (normalized 0-1 coordinates)
-        // Orca Whale - left constellation
+        // Orca Whale - left constellation (profile view, facing right)
         const ORCA_PATTERN = [
-            // Dorsal fin (distinctive feature)
-            [0.45, 0.15], [0.48, 0.10], [0.51, 0.05], [0.54, 0.10], [0.57, 0.15],
-            // Head and rostrum
-            [0.20, 0.40], [0.25, 0.35], [0.30, 0.32], [0.35, 0.30],
-            // Eye patch
-            [0.32, 0.36],
-            // Upper body
-            [0.40, 0.30], [0.50, 0.25], [0.60, 0.28], [0.70, 0.32],
-            // Lower body / belly
-            [0.25, 0.45], [0.35, 0.48], [0.45, 0.50], [0.55, 0.48], [0.65, 0.45], [0.72, 0.42],
-            // Tail section
-            [0.75, 0.38], [0.80, 0.35], [0.83, 0.32],
-            // Tail flukes (spread)
-            [0.85, 0.25], [0.88, 0.20], [0.90, 0.28], [0.92, 0.35], [0.90, 0.42], [0.88, 0.48],
-            // Pectoral fin
-            [0.40, 0.52], [0.38, 0.58], [0.36, 0.63], [0.35, 0.68]
+            // Dorsal fin (most distinctive - tall and prominent)
+            [0.50, 0.20], [0.52, 0.12], [0.54, 0.08], [0.56, 0.12], [0.58, 0.20],
+            // Head and rostrum (pointed snout)
+            [0.25, 0.45], [0.28, 0.42], [0.32, 0.40], [0.36, 0.38], [0.40, 0.36],
+            // Eye patch (distinctive white patch area)
+            [0.30, 0.44], [0.32, 0.46], [0.34, 0.44],
+            // Back line (curved)
+            [0.42, 0.35], [0.48, 0.30], [0.54, 0.28], [0.60, 0.30], [0.66, 0.35],
+            // Belly line (curved, opposite of back)
+            [0.30, 0.50], [0.38, 0.52], [0.46, 0.54], [0.54, 0.52], [0.62, 0.50],
+            // Tail section (narrowing)
+            [0.70, 0.40], [0.74, 0.38], [0.78, 0.36],
+            // Tail flukes (spread horizontally - distinctive)
+            [0.80, 0.30], [0.82, 0.25], [0.84, 0.32], [0.86, 0.40], [0.84, 0.45], [0.82, 0.50],
+            // Pectoral fin (on the side)
+            [0.42, 0.56], [0.40, 0.62], [0.38, 0.68], [0.36, 0.72]
         ];
 
-        // Stag - right constellation
+        // Stag - right constellation (profile view, facing left)
         const STAG_PATTERN = [
-            // Antlers (most distinctive feature) - left antler
-            [0.35, 0.05], [0.33, 0.12], [0.30, 0.18], [0.28, 0.10], [0.25, 0.15],
-            // Right antler
-            [0.50, 0.05], [0.52, 0.12], [0.55, 0.18], [0.57, 0.10], [0.60, 0.15],
-            // Head
-            [0.42, 0.22], [0.40, 0.28], [0.43, 0.32], [0.47, 0.32], [0.50, 0.28],
-            // Ears
-            [0.38, 0.20], [0.52, 0.20],
-            // Neck
-            [0.45, 0.36], [0.44, 0.42], [0.46, 0.48],
-            // Back line
-            [0.48, 0.52], [0.52, 0.54], [0.56, 0.55], [0.60, 0.54],
-            // Chest/front body
-            [0.42, 0.50], [0.40, 0.56], [0.42, 0.62],
-            // Belly line
-            [0.48, 0.58], [0.52, 0.60], [0.56, 0.60],
-            // Rear
-            [0.62, 0.52], [0.64, 0.58], [0.64, 0.64],
-            // Front legs
-            [0.44, 0.68], [0.44, 0.75], [0.44, 0.82],
-            [0.48, 0.66], [0.48, 0.73], [0.48, 0.80],
-            // Back legs
-            [0.58, 0.66], [0.58, 0.73], [0.58, 0.80],
-            [0.62, 0.68], [0.62, 0.75], [0.62, 0.82],
-            // Tail
-            [0.66, 0.50], [0.68, 0.48], [0.70, 0.46]
+            // Antlers (most distinctive feature) - left antler (closer to viewer)
+            [0.30, 0.08], [0.28, 0.15], [0.26, 0.22], [0.24, 0.18], [0.22, 0.25],
+            // Left antler tines
+            [0.27, 0.12], [0.25, 0.16], [0.23, 0.20],
+            // Right antler (further away, partially visible)
+            [0.48, 0.08], [0.50, 0.15], [0.52, 0.22], [0.50, 0.18], [0.48, 0.25],
+            // Right antler tines
+            [0.49, 0.12], [0.51, 0.16], [0.53, 0.20],
+            // Head (rounded snout, profile)
+            [0.40, 0.28], [0.38, 0.32], [0.36, 0.35], [0.34, 0.36], [0.32, 0.35], [0.30, 0.32],
+            // Neck (thick, curved)
+            [0.42, 0.38], [0.40, 0.42], [0.38, 0.46], [0.36, 0.50],
+            // Back line (curved, robust body)
+            [0.38, 0.52], [0.40, 0.56], [0.44, 0.58], [0.48, 0.59], [0.52, 0.58], [0.56, 0.56],
+            // Belly line (slightly convex)
+            [0.36, 0.54], [0.38, 0.58], [0.42, 0.60], [0.46, 0.61], [0.50, 0.60], [0.54, 0.58],
+            // Tail (small, upward-curving)
+            [0.58, 0.54], [0.60, 0.52], [0.62, 0.50],
+            // Front left leg (slightly forward)
+            [0.40, 0.62], [0.40, 0.68], [0.40, 0.74], [0.40, 0.80],
+            // Front right leg (behind left, partially visible)
+            [0.44, 0.64], [0.44, 0.70], [0.44, 0.76], [0.44, 0.82],
+            // Hind left leg (slightly forward)
+            [0.50, 0.60], [0.50, 0.66], [0.50, 0.72], [0.50, 0.78],
+            // Hind right leg (behind left)
+            [0.54, 0.62], [0.54, 0.68], [0.54, 0.74], [0.54, 0.80]
         ];
 
         // Initialize canvas size
@@ -584,24 +585,25 @@
             });
         }
 
-        // Generate constellation positions
+        // Generate constellation positions (higher up in the open sky)
         function generateConstellationPositions() {
             const width = canvas.width;
             const height = canvas.height;
-            const centerY = height / 2;
+            // Position constellations in upper third of sky (higher up)
+            const centerY = height * 0.35; // Upper third instead of center
 
-            // Calculate constellation sizing (responsive)
-            const constellationSize = Math.min(width, height) * 0.25;
+            // Calculate constellation sizing (responsive, slightly larger for visibility)
+            const constellationSize = Math.min(width, height) * 0.28;
 
-            // Orca on the left (centered in left third of screen)
-            const orcaCenterX = width * 0.3;
+            // Orca on the left (more centered)
+            const orcaCenterX = width * 0.4;
             const orcaPositions = ORCA_PATTERN.map(([x, y]) => ({
                 x: orcaCenterX - constellationSize * 0.5 + x * constellationSize,
                 y: centerY - constellationSize * 0.4 + y * constellationSize
             }));
 
-            // Stag on the right (centered in right third of screen)
-            const stagCenterX = width * 0.7;
+            // Stag on the right (more centered)
+            const stagCenterX = width * 0.6;
             const stagPositions = STAG_PATTERN.map(([x, y]) => ({
                 x: stagCenterX - constellationSize * 0.5 + x * constellationSize,
                 y: centerY - constellationSize * 0.45 + y * constellationSize
@@ -611,22 +613,50 @@
             return [...orcaPositions, ...stagPositions];
         }
 
-        // Set constellation targets for transformation
+        // Set constellation targets - ONLY use text stars (the ones that formed the text)
         function setConstellationTargets() {
             const positions = generateConstellationPositions();
-
-            // Assign positions to stars
-            stars.forEach((star, i) => {
-                star.isTextStar = false; // Reset text star flag for constellations
-                if (i < positions.length) {
-                    star.setTarget(positions[i].x, positions[i].y);
+            
+            // Get only the text stars (the ones that formed "Will you be my partner?")
+            const textStars = stars.filter(star => star.isTextStar);
+            
+            console.log(`Reshaping ${textStars.length} text stars into ${positions.length} constellation positions`);
+            
+            // Split constellation positions between orca and stag
+            const orcaPositions = positions.slice(0, ORCA_PATTERN.length);
+            const stagPositions = positions.slice(ORCA_PATTERN.length);
+            
+            // Distribute text stars between orca and stag
+            // First half go to orca, second half go to stag
+            const orcaStarCount = Math.floor(textStars.length / 2);
+            
+            textStars.forEach((star, i) => {
+                // Preserve current position (text position) as start position for smooth animation
+                star.startX = star.x;
+                star.startY = star.y;
+                
+                if (i < orcaStarCount) {
+                    // Assign to orca constellation
+                    // Map star index to orca position index (wrap around if needed)
+                    const orcaIndex = i % orcaPositions.length;
+                    star.setTarget(orcaPositions[orcaIndex].x, orcaPositions[orcaIndex].y);
                 } else {
-                    // Extra stars fade to random positions around constellations
-                    const randSide = Math.random() < 0.5 ? 0.3 : 0.7;
-                    star.setTarget(
-                        canvas.width * randSide + (Math.random() - 0.5) * 200,
-                        canvas.height / 2 + (Math.random() - 0.5) * 300
-                    );
+                    // Assign to stag constellation
+                    const stagStarIndex = i - orcaStarCount;
+                    const stagIndex = stagStarIndex % stagPositions.length;
+                    star.setTarget(stagPositions[stagIndex].x, stagPositions[stagIndex].y);
+                }
+                
+                // Keep text star properties (brightness, size variations) for constellations
+                // Don't reset isTextStar - we want to keep the enhanced visibility
+            });
+            
+            // Background stars (non-text stars) stay in their current positions
+            stars.forEach(star => {
+                if (!star.isTextStar) {
+                    star.startX = star.x;
+                    star.startY = star.y;
+                    star.setTarget(star.x, star.y); // Stay in place
                 }
             });
         }
@@ -697,9 +727,10 @@
 
                 if (progress >= 1.0) {
                     isAnimating = false;
-                    // Ensure all text stars are fully visible
+                    // Ensure all text stars are fully visible and smoothly transitioned
                     stars.forEach(star => {
                         if (star.isTextStar) {
+                            // Set to 1.0 to ensure full visibility - opacity calculation will handle smooth twinkle
                             star.fadeInProgress = 1.0;
                         }
                     });
@@ -713,11 +744,23 @@
             }
 
             // Update star positions if forming constellations
+            // Only animate text stars (the ones that formed the text) into constellations
             if (isFormingConstellations) {
                 const elapsed = time - animationStartTime;
                 const progress = Math.min(elapsed / CONSTELLATION_DURATION, 1.0);
 
-                stars.forEach(star => star.updatePosition(progress));
+                // Smooth ease-in-out for constellation formation
+                const eased = progress < 0.5
+                    ? 4 * progress * progress * progress
+                    : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+
+                // Animate text stars from their text positions to constellation positions
+                stars.forEach(star => {
+                    if (star.isTextStar) {
+                        star.updatePosition(eased);
+                    }
+                    // Background stars stay in place (already handled in setConstellationTargets)
+                });
 
                 if (progress >= 1.0) {
                     isFormingConstellations = false;
