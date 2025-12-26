@@ -253,9 +253,8 @@
             setTarget(targetX, targetY) {
                 this.targetX = targetX;
                 this.targetY = targetY;
-                // For fade-in animation, set position immediately (no movement)
-                this.x = targetX;
-                this.y = targetY;
+                // Keep current position - stars will animate from start to target
+                // Don't move immediately - let animation handle the movement
             }
 
             // Update position based on animation progress
@@ -271,21 +270,21 @@
 
             // Calculate opacity based on time for twinkle effect
             getOpacity(time) {
-                let baseOpacity;
                 if (this.isTextStar) {
-                    // During fade-in, don't twinkle - just use full brightness
-                    if (this.fadeInProgress < 1.0) {
-                        baseOpacity = 1.0; // Full brightness during fade-in
+                    // Text stars: fadeInProgress directly controls opacity (0 = invisible, 1 = fully visible)
+                    // During fade-in, fadeInProgress smoothly goes from 0 to 1
+                    // After fade-in complete, add subtle twinkle
+                    if (this.fadeInProgress >= 0.999) {
+                        // Fade-in complete, add subtle twinkle
+                        return 0.95 + 0.05 * Math.sin(time * this.twinkleSpeed + this.twinkleOffset);
                     } else {
-                        // After fade-in complete, add subtle twinkle
-                        baseOpacity = 0.95 + 0.05 * Math.sin(time * this.twinkleSpeed + this.twinkleOffset);
+                        // During fade-in: use fadeInProgress directly for smooth transition
+                        return this.fadeInProgress;
                     }
                 } else {
                     // Background stars: Sine wave for smooth pulsing (0.7 to 1.0 opacity range - brighter)
-                    baseOpacity = 0.7 + 0.3 * Math.sin(time * this.twinkleSpeed + this.twinkleOffset);
+                    return 0.7 + 0.3 * Math.sin(time * this.twinkleSpeed + this.twinkleOffset);
                 }
-                // Apply fade-in progress
-                return baseOpacity * this.fadeInProgress;
             }
             
             // Get display radius (text stars are larger)
@@ -297,8 +296,8 @@
                 const opacity = this.getOpacity(time);
                 const displayRadius = this.getDisplayRadius();
                 
-                // Skip drawing if completely invisible (optimization)
-                if (opacity <= 0) return;
+                // Skip drawing if completely invisible (use threshold for smooth fade)
+                if (opacity < 0.01) return;
                 
                 if (this.isTextStar) {
                     // Text stars: brighter glow and larger size
@@ -481,15 +480,16 @@
             // Use all positions - don't filter (text should fit within safe area with adjusted margins)
             const safePositions = positions;
 
-            // Assign positions to stars - set them immediately for fade-in effect
+            // Assign target positions for stars - they'll animate from random positions to text
             console.log(`Positioning ${safePositions.length} stars for text formation out of ${stars.length} total stars`);
             stars.forEach((star, i) => {
                 if (i < safePositions.length) {
+                    // Set target position (star will animate from current random position to here)
                     star.setTarget(safePositions[i].x, safePositions[i].y);
                     star.isTextStar = true; // Mark as text star for enhanced visibility
-                    star.fadeInProgress = 0; // Start invisible, will fade in smoothly
-                    // Stagger the fade-in: each star starts slightly later for smooth effect
-                    star.fadeDelay = (i / safePositions.length) * 0.6; // Spread over 0.6 seconds
+                    star.fadeInProgress = 0.3; // Start slightly visible so we can see them moving
+                    // Stagger the animation: each star starts slightly later for smooth effect
+                    star.fadeDelay = (i / safePositions.length) * 0.2; // Spread over 20% of animation
                 } else {
                     // Extra stars stay in random positions within safe area
                     star.setTarget(
@@ -581,32 +581,35 @@
             // Clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Fade in stars for text formation (no movement, just fade)
+            // Animate stars moving from random positions to form text
             if (isAnimating) {
                 const elapsed = time - animationStartTime;
                 const progress = Math.min(elapsed / ANIMATION_DURATION, 1.0);
 
-                // Fade in text stars smoothly with staggered timing to prevent stutter
+                // Animate text stars: move from random positions to text positions + fade in
                 stars.forEach(star => {
                     if (star.isTextStar) {
-                        // Calculate when this star should start fading (after its delay)
-                        const fadeStartProgress = star.fadeDelay; // Delay as fraction of total duration
-                        const fadeDuration = 1.0 - fadeStartProgress; // Remaining time after delay
+                        // Calculate when this star should start animating (after its delay)
+                        const animStartProgress = star.fadeDelay; // Delay as fraction of total duration
+                        const animDuration = 1.0 - animStartProgress; // Remaining time after delay
                         
                         let starProgress = 0;
-                        if (progress > fadeStartProgress && fadeDuration > 0) {
-                            // Star has started fading - calculate its progress (0 to 1)
-                            const elapsedSinceStart = progress - fadeStartProgress;
-                            starProgress = Math.min(1, elapsedSinceStart / fadeDuration);
+                        if (progress > animStartProgress && animDuration > 0) {
+                            // Star has started animating - calculate its progress (0 to 1)
+                            const elapsedSinceStart = progress - animStartProgress;
+                            starProgress = Math.min(1, elapsedSinceStart / animDuration);
                         }
                         
-                        // Very smooth ease-in-out using sine wave for ultra-smooth transition
-                        if (starProgress > 0) {
-                            const eased = -(Math.cos(Math.PI * starProgress) - 1) / 2;
-                            star.fadeInProgress = eased;
-                        } else {
-                            star.fadeInProgress = 0; // Still waiting to start
-                        }
+                        // Smooth ease-in-out cubic for natural movement
+                        const eased = starProgress < 0.5
+                            ? 4 * starProgress * starProgress * starProgress
+                            : 1 - Math.pow(-2 * starProgress + 2, 3) / 2;
+                        
+                        // Update position: animate from start position to target position
+                        star.updatePosition(eased);
+                        
+                        // Fade in as they move (start at 0.3, fade to 1.0)
+                        star.fadeInProgress = 0.3 + (eased * 0.7); // Smooth fade from 0.3 to 1.0
                     }
                 });
 
